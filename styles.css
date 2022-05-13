@@ -106,3 +106,26 @@ footer {
     text-align: center;
     height: 30px;
 }
+
+.hidden {
+	display: none;
+}
+.xray .hidden {
+	display: revert;
+}
+.xray .x-hidden {
+	display: none;
+}
+
+#expand-skills {
+	color: #0f0;
+	font-size: .5em;
+	position: relative;
+	bottom: .2em;
+	left: -.5em;
+}
+
+#expand-skills:hover {
+	cursor: pointer;
+	text-decoration: underline;
+}

@@ -27,16 +27,20 @@
             <li>Marcin Rzepisko</li>
             <li>Tychy / Poland &nbsp;| 1991</li>
         </ul>
-		<h2>Skills</h2>
-        <ul>
-            <li>Unity3D, Godot, Unreal Engine</li>
-            <li>C#, Java, C++, JS, Python, (...)</li>
-			<li>HLSL Compute Shaders</li>
-			<li>pgSQL, DB2, Oracle</li>
-			<li>Spring, Hibernate, RabitMQ</li>
-			<li>Photoshop, FMOD</li>
-			<li>HTML, CSS</li>
-			<li>GIT, SVN</li>
+        <h2>Skills <small id="expand-skills" onclick="document.getElementById('ul-skills').classList.toggle('xray')">+</small></h2>
+        <ul id="ul-skills">
+            <li>Unity3D<span class="hidden">, Godot, Unreal Engine</span></li>
+            <li>C#, Java<span class="hidden">, C++, JS, Python,</span></li>
+            <li class="hidden">HLSL Compute Shaders</li>
+            <li class="x-hidden">SQL</li>
+            <li class="hidden">pgSQL, DB2, Oracle</li>
+            <li class="hidden">Spring, Hibernate, RabitMQ</li>
+            <li class="hidden">Photoshop, FMOD</li>
+            <li class="x-hidden">Web</li>
+            <li class="hidden">HTML, CSS</li>
+            <li class="hidden">GIT, SVN</li>
+            <li class="hidden">Double bass</li>
+            <li class="x-hidden">(...)</li>
         </ul>
         <div class="projects">
             <h2>Social</h2>
@@ -119,8 +123,8 @@
                     <li>iOS, Android</li>
                     <li>genre: Match-3</li>
                     <li>Unity3D</li>
-                    <li><a href="https://itunes.apple.com/pl/app/minerya/id1130922855" target="_blank">iTunes</a></li>
-                    <li><a href="https://play.google.com/store/apps/details?id=pl.com.pacamera.Starscrappers" class="na" onclick="return false;">Google Play - not available :(</span></a></li>
+                    <li><a class="na" href="https://itunes.apple.com/pl/app/minerya/id1130922855" target="_blank">iTunes</a></li>
+                    <li><a class="na" href="https://play.google.com/store/apps/details?id=pl.com.pacamera.Starscrappers" onclick="return false;">Google Play - not available :(</span></a></li>
                 </ul>
                 <div class="gallery">
                     <div class="item">
@@ -323,7 +327,7 @@
                     <li>Mobile</li>
                     <li>Unity3D</li>
                     <li><a href="https://github.com/mrzepisko/rocket-lander" target="_blank">source</a></li>
-                    <li><a href="https://play.google.com/store/apps/details?id=pl.mrzepisko.rocketlander" target="_blank">google play</a></li>
+                    <li><a class="na" href="https://play.google.com/store/apps/details?id=pl.mrzepisko.rocketlander" target="_blank">google play</a></li>
                 </ul>
                 <div class="gallery">
                     <div class="item">
@@ -337,7 +341,7 @@
         </div>
     </section>
 </div>
-<footer><small>mrzepisko 2019-2021</small></footer>
+<footer><small>mrzepisko 2019-2022</small></footer>
 <script src="a/lightbox/js/lightbox-plus-jquery.min.js"></script>
 </body>
 </html>
