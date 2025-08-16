@@ -1,0 +1,225 @@
+{
+  "sections": [
+    {
+      "id": "about",
+      "title": "About",
+      "entries": [
+        {
+          "type": "text",
+          "content": "Hi, I am Marcin, game developer with 10+ years of combined experience in games, backend and medtech. I have strong background in real-time software and high-performance simulations with broad range of versatile technical skills and a proven ability to learn and adapt to complex systems."
+        }
+      ]
+    },
+    {
+      "id": "contact",
+      "title": "Contact / Links",
+      "entries": [
+        { "type": "link", "label": "LinkedIn", "url": "https://linkedin.com/in/mrzepisko" },
+        { "type": "link", "label": "Twitter / X", "url": "https://twitter.com/mrzepisko" },
+        { "type": "link", "label": "Itch.io", "url": "https://mrzepisko.itch.io" },
+        { "type": "link", "label": "GitHub", "url": "https://github.com/mrzepisko" },
+        { "type": "link", "label": "Steam", "url": "https://steamcommunity.com/id/rzmarcin" }
+      ]
+    },
+    {
+      "id": "professional",
+      "title": "Professional Work",
+      "entries": [
+        { "type": "project", "projectId": "woodoku" },
+        { "type": "project", "projectId": "enemy" },
+        { "type": "project", "projectId": "warhospital" },
+        { "type": "project", "projectId": "nightwolf" },
+        { "type": "project", "projectId": "fvr" },
+        { "type": "project", "projectId": "minerya" }
+      ]
+    },
+    {
+      "id": "gamejams",
+      "title": "Game Jams",
+      "entries": [
+        { "type": "project", "projectId": "medic" },
+        { "type": "project", "projectId": "lancelot" },
+        { "type": "project", "projectId": "spiceders2000" },
+        { "type": "project", "projectId": "wave" },
+        { "type": "project", "projectId": "lava" }
+      ]
+    },
+    {
+      "id": "prototypes",
+      "title": "Other projects / prototypes",
+      "entries": [
+        { "type": "project", "projectId": "springlade" },
+        { "type": "project", "projectId": "asteroids" },
+        { "type": "project", "projectId": "lander" }
+      ]
+    }
+  ],
+
+  "projects": [
+    {
+      "id": "enemy",
+      "title": "Enemy of the State",
+      "year": 2022,
+      "role": "Lead Game Programmer @ Brave Lamb Studio",
+      "platform": "PC / Steam",
+      "description": "Enemy of the State is a co-op and single-player shooter set in the world of 1920s crime lords. You’re an aspiring mobster trying to reach the top during the Prohibition era. Gather your friends and perform heists all over the world. Will you build the most powerful crime syndicate in the world?",
+      "screenshots": [ "eots1.jpg", "eots2.jpg", "eots3.jpg" ],
+      "links": [
+        { "label": "Steam Store", "url": "https://store.steampowered.com/app/2012040/Enemy_of_the_State/" }
+      ]
+    },
+    {
+      "id": "warhospital",
+      "title": "War Hospital",
+      "year": 2021,
+      "role": "Unity Developer @ Brave Lamb Studio",
+      "platform": "PC, PS5, Xbox Series X",
+      "description": "Be the ray of hope among the darkness of war. Control a British WW1 field hospital in a 3D isometric RTS where you lead the medical corps instead of soldiers. Fight for life, soul, and humanity in a world that rejected them in a unique society survival game.",
+      "screenshots": [ "wh1.jpg", "wh2.jpg" ],
+      "links": [
+        { "label": "Trailer", "url": "https://www.youtube.com/watch?v=bRxYz--mQLU" },
+        { "label": "Steam Page", "url": "https://store.steampowered.com/app/1553000/War_Hospital/" },
+        { "label": "Xbox Store", "url": "https://www.xbox.com/en-US/games/store/war-hospital/9P8GR4BMTV36" },
+        { "label": "PS Store", "url": "https://store.playstation.com/en-us/product/UP6665-PPSA08926_00-WH00000000000000" }
+      ]
+    },
+    {
+      "id": "nightwolf",
+      "title": "Nightwolf: Survive the Megadome",
+      "year": 2019,
+      "role": "Lead Game Programmer @ CYBERPHO",
+      "platform": "PC / Steam",
+      "description": "Guns, cars, lasers and explosions! Synth themed, cyber powered vehicular combat game, where you play as a contender in world’s most popular sports arena – the MEGADOME.",
+      "screenshots": [ "nw1.jpg", "nw2.jpg" ],
+      "links": [
+        { "label": "Steam Page", "url": "https://store.steampowered.com/app/760050/Nightwolf_Survive_the_Megadome/" }
+      ]
+    },
+    {
+      "id": "fvr",
+      "title": "Fundamental Surgery",
+      "year": 2021,
+      "role": "Unity Developer",
+      "platform": "PC VR / Meta Quest",
+      "description": "Fundamental Surgery is a medical simulation platform, that combines both virtual reality environment and haptics (sense of touch) to provide real-time feedback on individual medical procedures. The main objective of Fundamental Surgery is to provide a safe, virtual environment where surgeons or other practitioners can perform and train and develop skills.",
+      "screenshots": [ "fvr1.png", "fvr2.png" ],
+      "links": [
+        { "label": "Web", "url": "https://www.fundamentalxr.com/" },
+        { "label": "Soft Tissue", "url": "https://www.linkedin.com/feed/update/urn:li:activity:6828264191565058049/" },
+        { "label": "Multiuser", "url": "https://www.linkedin.com/feed/update/urn:li:activity:6810204577787330560/" }
+      ]
+    },
+    {
+      "id": "minerya",
+      "title": "Minerya",
+      "year": 2016,
+      "role": "Unity Developer",
+      "platform": "Android, iOS",
+      "description": "Use your cunning, dangerous weapons and powerful boosters to become the richest miner in the galaxy.",
+      "screenshots": [ "my2.png", "my3.png", "my11.png", "my22.png" ],
+      "links": []
+    },
+    {
+      "id": "lava",
+      "title": "Floor Is Lava",
+      "year": 2016,
+      "role": "Programmer",
+      "platform": "Ludum Dare 37",
+      "description": "The room is a place where one must have a great imagination to hold out against boredom. Tiny platformer where you run away from rising lava, inspired by old classics like icy-tower",
+      "screenshots": [
+        "lava1.mp4", "lava2.mp4", "lava3.jpg"
+      ],
+      "links": []
+    },
+    {
+      "id": "woodoku",
+      "title": "Woodoku",
+      "year": 2023,
+      "role": "Senior Game Programmer",
+      "platform": "Android & iOS",
+      "description": "Woodoku is a mobile puzzle game blending Sudoku logic with Tetris-style block placement, designed for casual players across a broad age group.",
+      "screenshots": [ "wood1.png", "wood2.png", "wood3.png", "wood4.png" ],
+      "links": [
+        {"label": "Google Store", "url": "https://play.google.com/store/apps/details?id=com.tripledot.woodoku" },
+        {"label": "Apple Store", "url": "https://apps.apple.com/us/app/woodoku-wood-block-puzzles/id1496354836" }
+      ]
+    },
+    {
+      "id": "spiceders2000",
+      "title": "SPICEDERS2000",
+      "year": 2017,
+      "role": "dev",
+      "platform": "Slavic Game Jam",
+      "description": "Pixelart shooter inspired by 'DOOM' and 'The Thing', where you can either spot the enemy or fire blindly into the darkness, hoping to hit",
+      "screenshots": [ "spiceders2000_1.png", "spiceders2000_2.png"],
+      "links": [
+        { "label":  "Itch.io", "url":  "https://itch.io/jam/sgj18/rate/162603" }
+      ]
+    },
+    {
+      "id": "springlade",
+      "title": "Springlade",
+      "year": 2016,
+      "role": "dev",
+      "platform": "Prototype",
+      "description": "Adventure game prototype, created as a part of assignment for Game Dev School",
+      "screenshots": [ "spr5.jpg", "spr4.jpg", "spr1.jpg", "spr2.jpg", "spr3.jpg" ],
+      "links": []
+    },
+    {
+      "id": "asteroids",
+      "title": "Asteroids",
+      "year": 2015,
+      "role": "dev",
+      "platform": "Remake",
+      "description": "Classic Arcade Game remade, created as a part of assignment for Game Dev School",
+      "screenshots": [ "asteroids.png" ],
+      "links": []
+    },
+    {
+      "id": "lander",
+      "title": "Rocket Lander",
+      "year": 2018,
+      "role": "dev",
+      "platform": "Recruitment assignment",
+      "description": "'Moon Lander' inspired recruitment assignment",
+      "screenshots": [ "rl1.png", "rl2.png", "rl3.png" ],
+      "links": []
+    },
+    {
+      "id": "wave",
+      "title": "Human Wave",
+      "year": 2017,
+      "role": "dev",
+      "platform": "Global Game Jam",
+      "description": "Desperate attempt to escape from the torment of war",
+      "screenshots": [ "wave1.png", "wave2.png", "wave3.mp4" ],
+      "links": [
+        { "label": "Jam Site", "url": "https://globalgamejam.org/2017/games/human-wave" }
+      ]
+    },
+    {
+      "id": "medic",
+      "title": "Combat Medic",
+      "year": 2019,
+      "role": "dev",
+      "platform": "Side Quest Jam",
+      "description": "Triage, prioritise and treat wounded soldiers in this simple game where each tick a heart beat is simulated",
+      "screenshots": [ "cm1.png", "cm2.png" ],
+      "links": []
+    },
+    {
+      "id": "lancelot",
+      "title": "Shopping Cart Lancelot",
+      "year": 2018,
+      "role": "dev",
+      "platform": "Slavic Game Jame",
+      "description": "Silly jousting game where you ride a shopping cart wielding a mop like a lance with a bucket over your head trying to defeat an equally absurd opponent while a cardboard audience cheers",
+      "screenshots": [ "lanca1.png" ],
+      "links": [
+        {"label": "Itch.io", "url": "https://szymiszymiya.itch.io/shopping-cart-lancelot" },
+        {"label": "Silly Game Reels", "url": "https://www.youtube.com/watch?v=8UF2fxSHBiM" }
+      ]
+    }
+  ]
+}

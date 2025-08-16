@@ -1,0 +1,149 @@
+/* ===== Popup (terminal-styled modal) ===== */
+#popup-root {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  font-family: inherit;
+}
+
+/* overlay */
+.popup-overlay {
+  pointer-events: auto;
+  position: absolute;
+  inset: 0;
+  background: rgba(var(--overlay-rgb), var(--overlay-alpha, 0.55));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 20px;
+}
+
+/* box */
+.popup {
+  width: min(1000px, 96%);
+  max-height: 90%;
+  overflow: auto;
+  background: var(--popup-bg);
+  border: 3px solid var(--popup-border);
+  /* chunky popup shadow */
+  box-shadow:
+    calc(var(--shadow-offset) * 0.5) calc(var(--shadow-offset) * 0.5) 0 0 var(--shadow-color),
+    var(--shadow-offset) var(--shadow-offset) 0 0 var(--shadow-color),
+    calc(var(--shadow-offset) * 1.8) calc(var(--shadow-offset) * 1.8) 0 0 var(--shadow-color-2);
+  color: var(--popup-fg);
+  padding: 14px;
+  pointer-events: auto;
+  user-select: text;
+}
+
+/* header / meta */
+.popup-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap: 12px;
+  margin-bottom:8px;
+  background: var(--header-bg-transparent);
+  padding: 6px 8px;
+  border-bottom: 1px dashed var(--border);
+}
+.popup-title { font-weight: bold; font-size: 18px; }
+.popup-year { opacity: 0.8; font-size: 13px; }
+
+/* meta */
+.popup-meta {
+  color: var(--popup-fg);
+  opacity: 0.9;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+/* description */
+.popup-desc {
+  background: var(--header-bg-transparent);
+  padding: 8px;
+  margin: 0 0 10px 0;
+  white-space: pre-wrap;
+  border: 1px solid var(--header-bg-transparent);
+  color: var(--popup-fg);
+  font-family: monospace;
+  font-size: 13px;
+}
+
+/* screenshots container */
+.popup-screenshots {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap: 10px;
+  margin-bottom: 8px;
+  min-height: 160px;
+}
+
+/* image styles: pixelated feel */
+.screenshot {
+  max-width: 100%;
+  max-height: 320px;
+  image-rendering: pixelated;
+  border: 2px solid var(--border);
+  background: var(--bg);
+  display:block;
+}
+
+/* fallback */
+.screenshot.fallback {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width: 420px;
+  height: 240px;
+  color: var(--popup-fg);
+  border: 2px dashed var(--border);
+  font-size: 13px;
+  text-align: center;
+  background: var(--bg);
+}
+
+/* small caption for screenshot counter */
+.screenshot-caption { 
+  text-align:center; 
+  font-size:12px; 
+  opacity:0.9; 
+  margin-top:4px; 
+}
+
+/* popup buttons */
+.popup-controls {
+  display:flex;
+  gap:8px;
+  margin-bottom: 8px;
+}
+.popup-btn {
+  border:2px solid var(--border);
+  background:var(--header-bg);
+  color:var(--header-fg);
+  padding:6px 10px;
+  cursor:pointer;
+  font-family:inherit;
+}
+.popup-btn:hover { 
+  background: var(--selected-bg); 
+  color: var(--selected-fg); 
+}
+.popup-btn.close { margin-left: auto; }
+
+/* links inside popup */
+.popup-links {
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-top:8px;
+}
+.popup-links a {
+  color: var(--link);
+  text-decoration: underline;
+  padding: 4px 8px;
+  border: 1px solid var(--border-faint);
+}
+.popup-links a:hover { color: var(--link-highlight); }

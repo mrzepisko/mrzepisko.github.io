@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MyPortfolioTerm — Game Programmer</title>
+
+  <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="popups.css">
+    <link rel="stylesheet" href="skins.css">
+</head>
+<body class="skin-classic">
+      <script>
+    const skin = localStorage.getItem('skin');
+    console.log(skin);
+    if (skin) {
+        document.body.className = `skin-${skin}`;
+    }
+    </script>
+
+  <div class="header">
+    <div class="header-left">PortfolioBrowser v1.0</div>
+    <div class="header-right">[guest+14810885@github.io]</div>
+  </div>
+
+  <div class="main">
+    <!-- LEFT PANE -->
+    <div class="pane left focus" id="sections-pane" data-pane="left">
+      <div class="pane-header">
+        <span class="dir-arrow left-arrow">◀</span>
+        <div class="path" id="left-path">/home/mrzepisko/</div>
+        <div class="pane-stats" id="left-stats">0 items — ~0 KB</div>
+      </div>
+      <div class="pane-body" id="sections">
+        <!-- sections rendered here -->
+      </div>
+    </div>
+
+    <!-- Decorative central arrows -->
+    <div class="pane-center-arrows" aria-hidden="true">
+      <div class="arrow-line"></div>
+    </div>
+
+    <!-- RIGHT PANE -->
+    <div class="pane right" id="entries-pane" data-pane="right">
+      <div class="pane-header">
+        <span class="dir-arrow right-arrow">▶</span>
+        <div class="path" id="right-path">/home/mrzepisko/about</div>
+        <div class="pane-stats" id="right-stats">0 items — ~0 KB</div>
+      </div>
+      <div class="pane-body" id="entries">
+        <!-- entries rendered here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- command line above footer -->
+  <div class="cmdline-wrap">
+    <label class="cmd-prompt">:</label>
+    <input id="cmdline" class="cmdline" placeholder="Type 'help' for commands (e.g., ls, open 1, cd professional, skin dogglatte)" />
+    <button id="cmd-exec" class="cmd-exec">Run</button>
+  </div>
+
+    <div class="footer">
+    <div class="right-keys">
+      <span>Tab Panes</span> | <span>F9 Skin</span>
+    </div>
+  </div>
+
+  <!-- Popup root -->
+  <div id="popup-root" aria-hidden="true"></div>
+
+    <script src="main.js"></script>
+</body>
+</html>

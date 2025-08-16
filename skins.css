@@ -1,0 +1,309 @@
+/* =======================
+   CLASSIC MC SKIN
+   ======================= */
+body.skin-classic {
+  /* Background & default text */
+  --bg: #0000aa;           /* blue background */
+  --fg: #d3d3d3;           /* light gray text */
+
+  /* Pane borders */
+  --border: #5555ff;       /* slightly lighter blue for borders */
+
+  /* Selection & accent */
+  --selected-bg: #00ffff;  /* cyan background for selected */
+  --selected-fg: #000000;  /* black text on selection */
+  --accent: #00ffff;       /* cyan highlights */
+  --accent-bright: #55ffff; /* bright cyan hover/active accents */
+
+  /* Header & footer */
+  --header-bg: #0000aa;    /* blue header */
+  --header-fg: #ffff00;    /* yellow header text */
+  --footer-bg: #0000aa;    /* blue footer */
+  --footer-fg: #ffff00;    /* yellow footer text */
+
+  /* Links */
+  --link: #00ffff;          /* cyan links */
+  --link-highlight: #55ffff; /* bright cyan on hover */
+
+  /* Shadows */
+  --shadow-color: rgba(128,128,128,0.7);
+  --shadow-color-2: rgba(128,128,128,0.4);
+
+  /* Disabled / unfocused elements */
+  --disabled: #8080ff;      /* light blue for inactive/unfocused panes */
+  --input-unchanged: #d3d3d3;
+  --input-mark: #00ffff;
+
+  /* Popups / dialogs */
+  --popup-bg: #d3d3d3;      /* light gray popup background */
+  --popup-fg: #000000;      /* black popup text */
+  --popup-border: #808080;  /* gray popup border */
+}
+
+/* =======================
+   DARK SKIN
+   ======================= */
+body.skin-dark {
+  --bg: #000000;
+  --fg: #cccccc;
+  --border: #333333;
+
+  --selected-bg: #4444ff;
+  --selected-fg: #ffffff;
+  --accent: #44ccff;
+  --accent-bright: #88eeff;
+
+  --header-bg: #222222;
+  --header-fg: #ffffff;
+  --footer-bg: #222222;
+  --footer-fg: #ffffff;
+
+  --link: #44ccff;
+  --link-highlight: #88eeff;
+
+  --shadow-color: rgba(0,0,0,0.7);
+  --shadow-color-2: rgba(0,0,0,0.4);
+
+  /* Popups / dialogs */
+  --popup-bg: #333333;
+  --popup-fg: #ffffff;
+  --popup-border: #555555;
+}
+
+/* =======================
+   LIGHT SKIN
+   ======================= */
+body.skin-light {
+  --bg: #ffffff;
+  --fg: #000000;
+  --border: #cccccc;
+
+  --selected-bg: #00aaaa;
+  --selected-fg: #ffffff;
+  --accent: #00aaaa;
+  --accent-bright: #55ffff;
+
+  --header-bg: #dddddd;
+  --header-fg: #000000;
+  --footer-bg: #dddddd;
+  --footer-fg: #000000;
+
+  --link: #00aaaa;
+  --link-highlight: #55ffff;
+
+  --shadow-color: rgba(0,0,0,0.3);
+  --shadow-color-2: rgba(0,0,0,0.1);
+
+  /* Popups / dialogs */
+  --popup-bg: #eeeeee;
+  --popup-fg: #000000;
+  --popup-border: #aaaaaa;
+}
+
+
+/* ==========================
+   DOGGLATTE
+========================== */
+body.skin-dogglatte {
+  --bg: #1e1e2e;           
+  --fg: #cdd6f4;           
+
+  --border: #313244;       
+
+  --selected-bg: #f5c2e7;  
+  --selected-fg: #1e1e2e;  
+  --accent: #89b4fa;       
+  --accent-bright: #f5c2e7;
+
+  --header-bg: #313244;    
+  --header-fg: #f5c2e7;    
+  --footer-bg: #313244;    
+  --footer-fg: #f5c2e7;    
+
+  --link: #89b4fa;          
+  --link-highlight: #f5c2e7;
+
+  --shadow-color: rgba(0,0,0,0.7);
+  --shadow-color-2: rgba(0,0,0,0.4);
+
+  --disabled: #585b70;     
+  --input-unchanged: #cdd6f4;
+  --input-mark: #f5c2e7;
+
+  --popup-bg: #313244;     
+  --popup-fg: #cdd6f4;     
+  --popup-border: #585b70; 
+}
+
+/* ==========================
+   GROOVY
+========================== */
+body.skin-groovy {
+  --bg: #282828;           
+  --fg: #ebdbb2;           
+
+  --border: #665c54;       
+
+  --selected-bg: #458588;  
+  --selected-fg: #fbf1c7;  
+  --accent: #b16286;       
+  --accent-bright: #fabd2f;
+
+  --header-bg: #3c3836;    
+  --header-fg: #fabd2f;    
+  --footer-bg: #3c3836;    
+  --footer-fg: #fabd2f;    
+
+  --link: #8ec07c;          
+  --link-highlight: #fabd2f;
+
+  --shadow-color: rgba(0,0,0,0.7);
+  --shadow-color-2: rgba(0,0,0,0.4);
+
+  --disabled: #665c54;     
+  --input-unchanged: #ebdbb2;
+  --input-mark: #b16286;
+
+  --popup-bg: #3c3836;     
+  --popup-fg: #ebdbb2;     
+  --popup-border: #665c54; 
+}
+
+
+/* ==========================
+   VAMPIRE
+========================== */
+body.skin-vampire {
+  --bg: #282a36;            /* dark gray background */
+  --fg: #f8f8f2;             /* light gray/blue text */
+
+  --border: #44475a;         /* slightly lighter gray for borders */
+
+  --selected-bg: #6272a4;    /* dark blue selection */
+  --selected-fg: #f8f8f2;    /* white text on selection */
+  --accent: #50fa7b;          /* green accent for highlights */
+  --accent-bright: #ffb86c;   /* yellow/orange hover accents */
+
+  --header-bg: #44475a;       /* dark gray header */
+  --header-fg: #f1fa8c;       /* yellow header text */
+  --footer-bg: #44475a;       /* dark gray footer */
+  --footer-fg: #f1fa8c;       /* yellow footer text */
+
+  --link: #8be9fd;            /* blue links */
+  --link-highlight: #f8f8f2;  /* bright blue on hover */
+
+  --shadow-color: rgba(0,0,0,0.7);
+  --shadow-color-2: rgba(0,0,0,0.4);
+
+  --disabled: #555555;        
+  --input-unchanged: #a9b7c6;
+  --input-mark: #629755;
+
+  --popup-bg: #282a36;        
+  --popup-fg: #f8f8f2;        
+  --popup-border: #44475a;    
+}
+
+/* ==========================
+   HACKER
+========================== */
+body.skin-hacker {
+  --bg: #000000;            /* black background */
+  --fg: #00ff00;            /* bright green text */
+
+  --border: #007700;        /* darker green borders */
+
+  --selected-bg: #00ff00;   /* green selection background */
+  --selected-fg: #000000;   /* black text on selection */
+  --accent: #00ff00;        /* green accent */
+  --accent-bright: #55ff55; /* bright green hover/active accents */
+
+  --header-bg: #003300;     /* dark green header */
+  --header-fg: #00ff00;     /* bright green header text */
+  --footer-bg: #003300;     /* dark green footer */
+  --footer-fg: #00ff00;     /* bright green footer text */
+
+  --link: #00ff00;           /* green links */
+  --link-highlight: #55ff55; /* bright green hover */
+
+  --shadow-color: rgba(0,0,0,0.7);
+  --shadow-color-2: rgba(0,0,0,0.4);
+
+  --disabled: #004400;       
+  --input-unchanged: #00ff00;
+  --input-mark: #55ff55;
+
+  --popup-bg: #003300;       
+  --popup-fg: #00ff00;       
+  --popup-border: #004400;   
+}
+
+
+/* ==========================
+   NEON SKIN
+========================== */
+body.skin-neon {
+  --bg: #0a0a0a;             /* very dark background */
+  --fg: #f0f0f0;             /* bright light text */
+
+  --border: #ff00ff;         /* neon magenta borders */
+
+  --selected-bg: #00ffff;    /* cyan selection */
+  --selected-fg: #000000;    /* black text on selection */
+  --accent: #ff00ff;         /* neon magenta accents */
+  --accent-bright: #ff55ff;  /* bright neon hover/active */
+
+  --header-bg: #1a1a1a;      /* slightly lighter dark bg */
+  --header-fg: #00ffff;      /* neon cyan header text */
+  --footer-bg: #1a1a1a;
+  --footer-fg: #00ffff;
+
+  --link: #00ffff;           /* neon cyan links */
+  --link-highlight: #55ffff; /* bright cyan hover */
+
+  --shadow-color: rgba(255,0,255,0.7);
+  --shadow-color-2: rgba(255,0,255,0.4);
+
+  --disabled: #555555;       
+  --input-unchanged: #f0f0f0;
+  --input-mark: #ff00ff;
+
+  --popup-bg: #111111;       
+  --popup-fg: #f0f0f0;       
+  --popup-border: #ff00ff;   
+}
+
+
+/* ==========================
+   PASTEL SKIN
+========================== */
+body.skin-pastel {
+  --bg: #fdf6f0;             /* soft cream background */
+  --fg: #4a4a4a;             /* dark gray text */
+
+  --border: #d8b4ff;         /* soft purple borders */
+
+  --selected-bg: #d7e7a0;    /* pastel teal selection */
+  --selected-fg: #2a2a2a;    /* dark text on selection */
+  --accent: #ffb3ba;         /* pastel pink accents */
+  --accent-bright: #ffd6d6;  /* brighter pastel hover/active */
+
+  --header-bg: #f0e6f6;      /* light lavender header bg */
+  --header-fg: #4a4a4a;      /* dark gray header text */
+  --footer-bg: #f0e6f6;      
+  --footer-fg: #4a4a4a;
+
+  --link: #8fd3f4;           /* pastel blue links */
+  --link-highlight: #a0e7e5; /* pastel cyan hover */
+
+  --shadow-color: rgba(128,128,128,0.4);
+  --shadow-color-2: rgba(128,128,128,0.2);
+
+  --disabled: #cccccc;       
+  --input-unchanged: #4a4a4a;
+  --input-mark: #ffb3ba;
+
+  --popup-bg: #ffffff;       
+  --popup-fg: #4a4a4a;       
+  --popup-border: #d8b4ff;   
+}
