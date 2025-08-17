@@ -335,12 +335,12 @@ body{
   margin-top:8px;
 }
 .popup-links a {
-  color: var(--link);
+  color: var(--popup-link);
   text-decoration: underline;
   padding: 4px 8px;
   border: 1px solid var(--border-faint);
 }
-.popup-links a:hover { color: var(--link-highlight); }
+.popup-links a:hover { color: var(--popup-link-hover); }
 
 /* ===== Responsive tweaks ===== */
 /* hide decorative arrows on narrow tablets / small screens */

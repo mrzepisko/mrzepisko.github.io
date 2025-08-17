@@ -38,36 +38,8 @@ body.skin-classic {
   --popup-bg: #d3d3d3;      /* light gray popup background */
   --popup-fg: #000000;      /* black popup text */
   --popup-border: #808080;  /* gray popup border */
-}
-
-/* =======================
-   DARK SKIN
-   ======================= */
-body.skin-dark {
-  --bg: #000000;
-  --fg: #cccccc;
-  --border: #333333;
-
-  --selected-bg: #4444ff;
-  --selected-fg: #ffffff;
-  --accent: #44ccff;
-  --accent-bright: #88eeff;
-
-  --header-bg: #222222;
-  --header-fg: #ffffff;
-  --footer-bg: #222222;
-  --footer-fg: #ffffff;
-
-  --link: #44ccff;
-  --link-highlight: #88eeff;
-
-  --shadow-color: rgba(0,0,0,0.7);
-  --shadow-color-2: rgba(0,0,0,0.4);
-
-  /* Popups / dialogs */
-  --popup-bg: #333333;
-  --popup-fg: #ffffff;
-  --popup-border: #555555;
+  --popup-link: #0000aa;
+  --popup-link-hover: #ffff00;
 }
 
 /* =======================
@@ -98,6 +70,8 @@ body.skin-light {
   --popup-bg: #eeeeee;
   --popup-fg: #000000;
   --popup-border: #aaaaaa;
+  --popup-link: #00aaaa;
+  --popup-link-hover: #aaaaaa;
 }
 
 
@@ -133,6 +107,8 @@ body.skin-dogglatte {
   --popup-bg: #313244;     
   --popup-fg: #cdd6f4;     
   --popup-border: #585b70; 
+  --popup-link: #89b4fa;
+  --popup-link-hover: #f5c2e7;
 }
 
 /* ==========================
@@ -167,6 +143,8 @@ body.skin-groovy {
   --popup-bg: #3c3836;     
   --popup-fg: #ebdbb2;     
   --popup-border: #665c54; 
+  --popup-link: #8ec07c;
+  --popup-link-hover: #fabd2f;
 }
 
 
@@ -201,7 +179,9 @@ body.skin-vampire {
 
   --popup-bg: #282a36;        
   --popup-fg: #f8f8f2;        
-  --popup-border: #44475a;    
+  --popup-border: #44475a;   
+  --popup-link: #8be9fd;
+  --popup-link-hover: #f8f8f2;
 }
 
 /* ==========================
@@ -236,6 +216,8 @@ body.skin-hacker {
   --popup-bg: #003300;       
   --popup-fg: #00ff00;       
   --popup-border: #004400;   
+  --popup-link: #00ff00;
+  --popup-link-hover: #55ff55;
 }
 
 
@@ -271,6 +253,8 @@ body.skin-neon {
   --popup-bg: #111111;       
   --popup-fg: #f0f0f0;       
   --popup-border: #ff00ff;   
+  --popup-link: #00ffff;
+  --popup-link-hover: #55ffff;
 }
 
 
@@ -306,4 +290,6 @@ body.skin-pastel {
   --popup-bg: #ffffff;       
   --popup-fg: #4a4a4a;       
   --popup-border: #d8b4ff;   
+  --popup-link: #d8b4ff;
+  --popup-link-hover: #8fd3f4;
 }
