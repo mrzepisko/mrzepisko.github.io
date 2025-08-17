@@ -12,14 +12,12 @@
   --selected-bg: var(--accent-bright);
   --selected-fg: #000000;
 
-  /* link colors (skins should override these) */
   --link: var(--accent);
   --link-highlight: var(--accent-bright);
 
-  /* shadow control (skins may override) */
   --shadow-color: rgba(0,0,0,0.70);
   --shadow-color-2: rgba(0,0,0,0.40);
-  --shadow-offset: 8px; /* main pixel offset */
+  --shadow-offset: 8px;
 }
 
 /* ===== Layout ===== */
@@ -114,7 +112,7 @@ body{
     calc(var(--shadow-offset) * 2) calc(var(--shadow-offset) * 2) 0 0 var(--shadow-color-2);
 }
 
-/* focused pane gets brighter border */
+/* focused pane gives brighter border */
 .pane.focus {
   border-color: var(--accent-bright);
   box-shadow:
@@ -209,18 +207,9 @@ body{
   width: 12px;
 }
 
-/* responsive tweaks */
-@media (max-width:900px) {
-  .pane-center-arrows { display:none; width:0; }
-}
-@media (max-width:700px) {
-  .left { display:none; }
-  .main { padding:8px; }
-  .cmdline { font-size:13px; }
-}
-
+/* small decorative line */
 .arrow-line {
-    color: var(--fg);
+  color: var(--fg);
 }
 
 /* ===== Popup (terminal-styled modal) ===== */
@@ -251,7 +240,6 @@ body{
   overflow: auto;
   background: var(--popup-bg);
   border: 3px solid var(--popup-border);
-  /* chunky popup shadow */
   box-shadow:
     calc(var(--shadow-offset) * 0.5) calc(var(--shadow-offset) * 0.5) 0 0 var(--shadow-color),
     var(--shadow-offset) var(--shadow-offset) 0 0 var(--shadow-color),
@@ -262,7 +250,7 @@ body{
   user-select: text;
 }
 
-/* header / meta */
+/* popup header / meta */
 .popup-header {
   display:flex;
   justify-content:space-between;
@@ -276,7 +264,6 @@ body{
 .popup-title { font-weight: bold; font-size: 18px; }
 .popup-year { opacity: 0.8; font-size: 13px; }
 
-/* meta */
 .popup-meta {
   color: var(--popup-fg);
   opacity: 0.9;
@@ -284,7 +271,6 @@ body{
   margin-bottom: 8px;
 }
 
-/* description */
 .popup-desc {
   background: var(--header-bg-transparent);
   padding: 8px;
@@ -296,7 +282,6 @@ body{
   font-size: 13px;
 }
 
-/* screenshots container */
 .popup-screenshots {
   display:flex;
   align-items:center;
@@ -305,8 +290,6 @@ body{
   margin-bottom: 8px;
   min-height: 160px;
 }
-
-/* image styles: pixelated feel */
 .screenshot {
   max-width: 100%;
   max-height: 320px;
@@ -315,8 +298,6 @@ body{
   background: var(--bg);
   display:block;
 }
-
-/* fallback */
 .screenshot.fallback {
   display:flex;
   align-items:center;
@@ -329,16 +310,8 @@ body{
   text-align: center;
   background: var(--bg);
 }
+.screenshot-caption { text-align:center; font-size:12px; opacity:0.9; margin-top:4px; }
 
-/* small caption for screenshot counter */
-.screenshot-caption { 
-  text-align:center; 
-  font-size:12px; 
-  opacity:0.9; 
-  margin-top:4px; 
-}
-
-/* popup buttons */
 .popup-controls {
   display:flex;
   gap:8px;
@@ -352,13 +325,9 @@ body{
   cursor:pointer;
   font-family:inherit;
 }
-.popup-btn:hover { 
-  background: var(--selected-bg); 
-  color: var(--selected-fg); 
-}
+.popup-btn:hover { background: var(--selected-bg); color: var(--selected-fg); }
 .popup-btn.close { margin-left: auto; }
 
-/* links inside popup */
 .popup-links {
   display:flex;
   gap:6px;
@@ -372,3 +341,77 @@ body{
   border: 1px solid var(--border-faint);
 }
 .popup-links a:hover { color: var(--link-highlight); }
+
+/* ===== Responsive tweaks ===== */
+/* hide decorative arrows on narrow tablets / small screens */
+@media (max-width:900px) {
+  .pane-center-arrows { display:none; width:0; }
+}
+
+/* MOBILE: Stack panes vertically.
+   - Left pane shows on top and sizes to its content (only as much height as needed)
+   - Right pane sits below and uses remaining viewport space (scrolls internally if needed) */
+@media (max-width:700px) {
+  .main {
+    flex-direction: column;
+    padding: 8px;
+    gap: 8px;
+  }
+
+  /* Left pane becomes full width on top and sizes to content */
+  .left {
+    display: flex;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    flex: none; /* size to content height, don't stretch */
+    flex-direction: column;
+    order: 0;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* Right pane below, fills remaining space */
+  .right {
+    display: flex;
+    width: 100%;
+    max-width: none;
+    flex: 1 1 auto;
+    min-height: 0;
+    order: 1;
+    flex-direction: column;
+  }
+
+  .pane {
+    /* allow natural height on left, but remove forced large heights */
+    height: auto;
+    max-height: none;
+  }
+
+  /* left pane body: let content determine height (no forced scrolling) */
+  .left .pane-body {
+    max-height: none;
+    overflow: visible;
+  }
+
+  /* right pane body should use available viewport height and scroll if needed.
+     Reserve space for header, footer and command line (adjust 160px if you have larger header/footer). */
+  .right .pane-body {
+    max-height: calc(100vh - 160px);
+    overflow: auto;
+  }
+
+  .cmdline { font-size:13px; }
+
+  /* hide decorative center arrows on mobile */
+  .pane-center-arrows { display:none; width:0; }
+}
+
+/* small screens / very tight widths: reduce left min width constraints */
+@media (max-width:420px) {
+  .left { min-width: 0; padding: 0; }
+  .pane-header { padding: 6px; font-size: 12px; }
+  .cmdline-wrap { padding: 6px; }
+}
+
+/* end of file */
