@@ -326,6 +326,15 @@ function getSelectedSectionIndex() {
   return el ? parseInt(el.dataset.index, 10) : null;
 }
 
+// skin footer
+const footer = document.getElementById("change-skin");
+footer.addEventListener('click', () => {
+	currentSkinIndex = (currentSkinIndex + 1) % skins.length;
+    const skin = skins[currentSkinIndex];
+    document.body.className = `skin-${skin}`;
+    localStorage.setItem('skin', skin);
+});
+
 /* ---------------- Popup logic (same as previous) ---------------- */
 
 function openProjectPopup(project) {

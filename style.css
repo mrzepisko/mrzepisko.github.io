@@ -414,4 +414,9 @@ body{
   .cmdline-wrap { padding: 6px; }
 }
 
+#change-skin {
+	cursor: pointer;
+}
+
 /* end of file */
+
