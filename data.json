@@ -240,7 +240,7 @@
       "year": 2025,
 	  "platform": "Chilli Code Jam #2",
       "role": "Bevy / Rust",
-      "description": "A minimalist toy written in Rust where you chase elusive boids—catch them if you can, but they always try to escape—in a never-ending, zen-like pursuit with no goals or gameplay loop.",
+      "description": "A chaotic twist on Asteroids where you spawn asteroids to smash incoming spaceships during their brief pause before they jump to hyperspace",
       "screenshots": [ "inv1.png", "inv2.png", "inv3.png" ],
       "links": [
         {"label": "Itch.io", "url": "https://mrzepisko.itch.io/boid-chase" }
