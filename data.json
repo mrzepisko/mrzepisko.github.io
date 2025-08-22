@@ -37,6 +37,8 @@
       "id": "gamejams",
       "title": "Game Jams",
       "entries": [
+        { "type": "project", "projectId": "inversoids" },
+        { "type": "project", "projectId": "boids" },
         { "type": "project", "projectId": "medic" },
         { "type": "project", "projectId": "lancelot" },
         { "type": "project", "projectId": "spiceders2000" },
@@ -48,8 +50,8 @@
       "id": "prototypes",
       "title": "Other projects / prototypes",
       "entries": [
-        { "type": "project", "projectId": "springlade" },
         { "type": "project", "projectId": "asteroids" },
+        { "type": "project", "projectId": "springlade" },
         { "type": "project", "projectId": "lander" }
       ]
     }
@@ -171,7 +173,7 @@
       "title": "Asteroids",
       "year": 2015,
       "role": "dev",
-      "platform": "Remake",
+      "platform": "Godot 2.0",
       "description": "Classic Arcade Game remade, created as a part of assignment for Game Dev School",
       "screenshots": [ "asteroids.png" ],
       "links": []
@@ -181,7 +183,6 @@
       "title": "Rocket Lander",
       "year": 2018,
       "role": "dev",
-      "platform": "Recruitment assignment",
       "description": "'Moon Lander' inspired recruitment assignment",
       "screenshots": [ "rl1.png", "rl2.png", "rl3.png" ],
       "links": []
@@ -219,6 +220,30 @@
       "links": [
         {"label": "Itch.io", "url": "https://szymiszymiya.itch.io/shopping-cart-lancelot" },
         {"label": "Silly Game Reels", "url": "https://www.youtube.com/watch?v=8UF2fxSHBiM" }
+      ]
+    },
+    {
+      "id": "boids",
+      "title": "Boids",
+      "year": 2024,
+	  "platform": "Mini Jam 153",
+      "role": "Bevy / Rust",
+      "description": "A minimalist toy written in Rust where you chase elusive boids—catch them if you can, but they always try to escape—in a never-ending, zen-like pursuit with no goals or gameplay loop.",
+      "screenshots": [ "boids.png" ],
+      "links": [
+        {"label": "Itch.io", "url": "https://mrzepisko.itch.io/boid-chase" }
+      ]
+    },
+    {
+      "id": "inversoids",
+      "title": "Inversoids",
+      "year": 2025,
+	  "platform": "Chilli Code Jam #2",
+      "role": "Bevy / Rust",
+      "description": "A minimalist toy written in Rust where you chase elusive boids—catch them if you can, but they always try to escape—in a never-ending, zen-like pursuit with no goals or gameplay loop.",
+      "screenshots": [ "inv1.png", "inv2.png", "inv3.png" ],
+      "links": [
+        {"label": "Itch.io", "url": "https://mrzepisko.itch.io/boid-chase" }
       ]
     }
   ]
