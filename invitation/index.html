@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invitation generator</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+</head>
+<body>
+  <aside class="panel">
+    <div class="group" id="group-title">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <h1 style="margin:0;font-size:18px;">Invitation Generator</h1>
+        <button id="darkToggle">Dark</button>
+      <button id="panel-close" aria-label="Close">&#x2715;</button></div>
+      <div class="button-row"><button id="exportSvg">Export SVG</button><button id="randomizeAll">Randomize all</button></div>
+    </div>
+
+    <div class="group" id="group-save">
+      <h2>Save / load</h2>
+      <div class="button-row">
+        <button id="saveConfig">Save config</button>
+        <button id="loadConfig">Load config</button>
+      </div>
+      <input id="loadConfigFile" type="file" accept="application/json,.json" class="hidden" />
+    </div>
+
+    <div class="group" id="group-seeds">
+      <h2>Seeds</h2>
+      <div class="row">
+        <label for="seed">Random seed</label>
+        <input id="seed" type="number" min="1" max="999999" step="1" value="12345" />
+      </div>
+      <div class="button-row">
+        <button id="reroll">Reroll seed</button>
+        <button id="redraw">Redraw</button>
+      </div>
+    </div>
+
+    <div class="group" id="group-theme">
+      <h2>Theme</h2>
+      <div class="row">
+        <label for="palette">Preset</label>
+        <select id="palette"></select>
+      </div>
+      <div class="button-row"><button id="nextTheme">Next theme</button></div>
+      <div class="button-row" style="margin-top:8px">
+        <button id="newCustomTheme">Custom theme</button>
+      </div>
+    </div>
+
+    <div class="group hidden" id="customThemeGroup">
+      <h2>Custom theme editor</h2>
+      <div class="button-row three">
+        <button id="addThemeColor">Add color</button>
+        <button id="importTheme">Import</button>
+        <button id="exportTheme">Export</button>
+      </div>
+      <input id="importThemeFile" type="file" accept="application/json,.json" class="hidden" />
+      <div id="customThemeColors"></div>
+      <div class="note">Changes apply immediately. Stored in config JSON.</div>
+    </div>
+
+    <div class="group" id="group-circles">
+      <h2>Shapes</h2>
+      <div class="row">
+        <label for="shapeCount">Shape count</label>
+        <input id="shapeCount" type="range" min="20" max="240" step="1" value="88" />
+        <span id="shapeCountValue">88</span>
+      </div>
+      <div class="row">
+        <label for="circleWeight">Circle <span id="circleWeightPct">25</span>%</label>
+        <input id="circleWeight" type="range" min="0" max="100" step="1" value="25" />
+        <span id="circleWeightValue">25</span>
+      </div>
+      <div class="row">
+        <label for="starWeight">Star <span id="starWeightPct">25</span>%</label>
+        <input id="starWeight" type="range" min="0" max="100" step="1" value="25" />
+        <span id="starWeightValue">25</span>
+      </div>
+      <div class="row">
+        <label for="heartWeight">Heart <span id="heartWeightPct">25</span>%</label>
+        <input id="heartWeight" type="range" min="0" max="100" step="1" value="25" />
+        <span id="heartWeightValue">25</span>
+      </div>
+      <div class="row">
+        <label for="triangleWeight">Triangle <span id="triangleWeightPct">25</span>%</label>
+        <input id="triangleWeight" type="range" min="0" max="100" step="1" value="25" />
+        <span id="triangleWeightValue">25</span>
+      </div>
+      <div class="row">
+        <label for="minCircleSize">Min circle size</label>
+        <input id="minCircleSize" type="range" min="6" max="80" step="1" value="20" />
+        <span id="minCircleSizeValue">20</span>
+      </div>
+      <div class="row">
+        <label for="maxCircleSize">Max circle size</label>
+        <input id="maxCircleSize" type="range" min="10" max="140" step="1" value="58" />
+        <span id="maxCircleSizeValue">58</span>
+      </div>
+    </div>
+
+    <div class="group" id="group-text">
+      <h2>Text</h2>
+      <div class="row">
+        <label for="fontListSource">Font list source</label>
+        <select id="fontListSource">
+          <option value="safe">Safe stacks</option>
+          <option value="extended">Extended stacks</option>
+        </select>
+      </div>
+      <div class="button-row">
+        <button id="applyFontsToAll">Apply selected to all</button>
+        <button id="normalizeSizes">Normalize sizes</button>
+      </div>
+      <div class="note" style="margin-bottom:8px">Browser access to true system font enumeration is limited.</div>
+      <div class="button-row three">
+        <button id="addTextLine">Add line</button>
+        <button id="addBlankLine">Add blank</button>
+        <button id="resetTextLines">Reset</button>
+      </div>
+      <div id="textLinesContainer"></div>
+      <div class="note">Lines are fully dynamic. You can add, remove, reorder, change font, size, style, spacing and text.</div>
+    </div>
+
+    <div class="group" id="group-layout">
+      <h2>Layout</h2>
+      <div class="toggle-group" style="margin-bottom:10px">
+        <button class="toggle-btn placement-btn active" data-mode="edge">Edges</button>
+        <button class="toggle-btn placement-btn" data-mode="uniform">Uniform</button>
+      </div>
+      <div class="row">
+        <label for="edgeBias">Edge bias</label>
+        <input id="edgeBias" type="range" min="0" max="100" step="1" value="82" />
+        <span id="edgeBiasValue">82</span>
+      </div>
+      <div class="row">
+        <label for="overlapBias">Overlap bias</label>
+        <input id="overlapBias" type="range" min="0" max="100" step="1" value="34" />
+        <span id="overlapBiasValue">34</span>
+      </div>
+      <div class="row">
+        <label for="packingTightness">Packing tightness</label>
+        <input id="packingTightness" type="range" min="0" max="100" step="1" value="42" />
+        <span id="packingTightnessValue">42</span>
+      </div>
+      <div class="row">
+        <label for="transparentRatio">Transparent ratio</label>
+        <input id="transparentRatio" type="range" min="0" max="100" step="1" value="42" />
+        <span id="transparentRatioValue">42%</span>
+      </div>
+    </div>
+
+    <div class="group" id="group-safe">
+      <h2>Safe zone</h2>
+      <div class="row">
+        <label for="safeX">Safe X</label>
+        <input id="safeX" type="range" min="20" max="120" step="1" value="52" />
+        <span id="safeXValue">52%</span>
+      </div>
+      <div class="row">
+        <label for="safeY">Safe Y</label>
+        <input id="safeY" type="range" min="20" max="120" step="1" value="50" />
+        <span id="safeYValue">50%</span>
+      </div>
+      <div class="row">
+        <label for="safeW">Safe width</label>
+        <input id="safeW" type="range" min="18" max="80" step="1" value="42" />
+        <span id="safeWValue">42%</span>
+      </div>
+      <div class="row">
+        <label for="safeH">Safe height</label>
+        <input id="safeH" type="range" min="18" max="85" step="1" value="64" />
+        <span id="safeHValue">64%</span>
+      </div>
+      <div class="row">
+        <label for="safeMargin">Exclusion margin</label>
+        <input id="safeMargin" type="range" min="0" max="24" step="1" value="8" />
+        <span id="safeMarginValue">8%</span>
+      </div>
+      <div class="button-row">
+        <button id="centerSafe">Center safe area</button>
+        <button id="toggleSafe">Toggle safe area</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <label for="showGuides">Show guides</label>
+        <input id="showGuides" type="checkbox" checked />
+      </div>
+      <div class="note">Draggable in preview.</div>
+    </div>
+  </aside>
+
+  <main class="canvas-wrap">
+    <button id="panel-toggle" aria-label="Open settings">&#9776;</button>
+    <div id="zoom-bar">
+      <button id="zoomFit">Fit</button>
+      <button id="zoom100">1:1</button>
+      <input id="zoomSlider" type="range" min="25" max="400" step="5" value="100" />
+      <span id="zoomValue">100%</span>
+    </div>
+    <div id="canvas-host" class="canvas-host"></div>
+  </main>
+  <div id="mobile-bar">
+    <button id="mobileExportSvg">Export SVG</button>
+    <button id="mobileRandomizeAll">Randomize all</button>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
