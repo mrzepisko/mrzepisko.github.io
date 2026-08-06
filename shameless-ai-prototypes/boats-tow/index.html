@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Towing Prototype</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+</head>
+<body>
+  <div id="controls"></div>
+
+  <div id="canvas-container"></div>
+
+  <div id="hud">
+    <div id="hud-readout">
+      <div>Tension: <span id="tensionValue">0</span></div>
+      <div>Threshold: <span id="thresholdValue">0</span></div>
+      <div>State: <span id="ropeState">Attached</span></div>
+    </div>
+    <button id="resetButton" type="button">Reset</button>
+  </div>
+
+  <script src="physics.js"></script>
+  <script src="render.js"></script>
+  <script src="input.js"></script>
+  <script src="controls.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
