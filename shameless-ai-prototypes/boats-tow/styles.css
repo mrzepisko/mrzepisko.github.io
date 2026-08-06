@@ -1,0 +1,120 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #05070a;
+  color: #d8dee8;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+#canvas-container {
+  display: flex;
+}
+
+#canvas-container canvas {
+  display: block;
+  cursor: crosshair;
+}
+
+#hud {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  pointer-events: none;
+}
+
+#hud-readout {
+  background: rgba(16, 20, 24, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.6;
+  min-width: 140px;
+  text-align: right;
+}
+
+#resetButton {
+  pointer-events: auto;
+  background: rgba(16, 20, 24, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #d8dee8;
+  font-family: inherit;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#resetButton:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.gauge-tick-label {
+  font-size: 10px;
+  fill: #8b93a1;
+}
+
+#controls {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  bottom: 16px;
+  width: 220px;
+  overflow-y: auto;
+  background: rgba(16, 20, 24, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  padding: 10px 12px;
+  font-size: 12px;
+}
+
+.controls-section + .controls-section {
+  margin-top: 14px;
+}
+
+.controls-section h3 {
+  margin: 0 0 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8b93a1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 4px;
+}
+
+.controls-row {
+  display: grid;
+  grid-template-columns: 1fr 3fr auto;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0;
+}
+
+.controls-row label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.controls-row input[type="range"] {
+  width: 100%;
+  accent-color: #3aa0ff;
+}
+
+.controls-value {
+  min-width: 34px;
+  text-align: right;
+  color: #c8cfd9;
+}

@@ -1,0 +1,95 @@
+{
+  "canvas": {
+    "width": 1440,
+    "height": 900,
+    "background": "#101418"
+  },
+  "simulation": {
+    "fixedTimestepSeconds": 0.01667,
+    "maxStepsPerFrame": 5
+  },
+  "player": {
+    "radius": 14,
+    "color": "#3aa0ff",
+    "mass": 1.0,
+    "accel": 350,
+    "maxSpeed": 130,
+    "drag": 0.985
+  },
+  "towed": {
+    "massRatio": 2.5,
+    "bodyWidth": 40,
+    "bodyHeight": 26,
+    "roofHeight": 22,
+    "collisionRadius": 24,
+    "color": "#ff9f3a",
+    "angularDrag": 0.9,
+    "linearDrag": 0.99,
+    "attachOffset": { "x": 0, "y": -35 }
+  },
+  "rope": {
+    "maxLength": 180,
+    "stiffness": 40,
+    "damping": 6,
+    "snapExtraPercent": 0.5,
+    "snapFlatMin": 400,
+    "snapBaselineTimeConstant": 0.5,
+    "snapSustainSeconds": 0.15,
+    "tensionVisualMax": 900,
+    "gaugeMaxPercent": 150,
+    "gaugeTickIntervalPercent": 25,
+    "gaugePeakHoldSeconds": 0.6,
+    "gaugePeakFallPerSecond": 450,
+    "colorSlack": "#3fbf5f",
+    "colorTaut": "#ffd23f",
+    "colorNearSnap": "#ff3f3f"
+  },
+  "obstacles": [
+    { "x": 500, "y": 300, "width": 80, "height": 80, "color": "#4a4f57" },
+    { "x": 720, "y": 560, "width": 60, "height": 140, "color": "#4a4f57" }
+  ],
+  "spawn": {
+    "marginRight": 220,
+    "marginBottom": 150
+  },
+  "river": {
+    "heightFraction": 0.4,
+    "topMargin": 100,
+    "force": { "x": 120, "y": 0 },
+    "color": [58, 130, 168],
+    "fillOpacity": 40
+  },
+  "vortex": {
+    "radiusFraction": 0.2,
+    "marginLeft": 50,
+    "marginBottom": 50,
+    "pullStrength": 260,
+    "swirlStrength": 160,
+    "color": [150, 90, 190],
+    "fillOpacity": 45
+  },
+  "flowObstacles": {
+    "enabled": true,
+    "minSpawnIntervalSeconds": 6,
+    "maxSpawnIntervalSeconds": 14,
+    "width": 46,
+    "height": 46,
+    "collisionRadius": 22,
+    "mass": 1.5,
+    "baseSpeed": 90,
+    "speedVariance": 30,
+    "color": "#8a5a2a"
+  },
+  "collision": {
+    "enabled": true,
+    "restitution": 0.2
+  },
+  "hud": {
+    "gauge": { "x": 1380, "y": 40, "width": 24, "height": 300 }
+  },
+  "debug": {
+    "showTargetMarker": true,
+    "showTensionValue": true,
+    "showVectors": false
+  }
+}
