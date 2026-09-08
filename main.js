@@ -110,12 +110,7 @@ function renderEntries(section, id) {
         div.textContent = `${project.title} (${project.year}) — ${project.platform || 'Unknown'}`;
         div.dataset.projectId = project.id;
         // div.addEventListener('dblclick', () => openProjectPopup(project)); // double click to open
-        div.addEventListener('click', () => {
-          // single click selects
-          entriesBody.querySelectorAll('.entry').forEach(e => e.classList.remove('selected'));
-          div.classList.add('selected');
-          openProjectPopup(project);
-        });
+        div.addEventListener('click', () => openProjectPopup(project));
       } else {
         div.textContent = entry.label || '(unknown project)';
       }
@@ -138,6 +133,18 @@ function renderEntries(section, id) {
 function findProjectById(id) {
   if (!portfolioData || !portfolioData.projects) return null;
   return portfolioData.projects.find(p => p.id === id) || null;
+}
+
+/* project siblings within the currently selected section, for popup prev/next */
+function getProjectSiblings(project) {
+  const secIdx = getSelectedSectionIndex();
+  const section = (secIdx !== null && portfolioData.sections[secIdx]) ? portfolioData.sections[secIdx] : null;
+  const list = section
+    ? section.entries.filter(e => e.type === 'project').map(e => findProjectById(e.projectId)).filter(Boolean)
+    : [project];
+  let index = list.findIndex(p => p.id === project.id);
+  if (index < 0) { list.unshift(project); index = 0; }
+  return { list, index };
 }
 
 /* Estimate directory size lightly (for fun) */
@@ -340,6 +347,10 @@ footer.addEventListener('click', () => {
 function openProjectPopup(project) {
   popupRoot.innerHTML = '';
 
+  entriesBody.querySelectorAll('.entry').forEach(e => {
+    e.classList.toggle('selected', e.dataset.projectId === project.id);
+  });
+
   const overlay = document.createElement('div');
   overlay.className = 'popup-overlay';
   overlay.tabIndex = -1;
@@ -365,25 +376,32 @@ function openProjectPopup(project) {
   desc.textContent = project.description || '(No description provided)';
   popup.appendChild(desc);
 
-  // screenshots area
+  // screenshots area (thumbnail grid)
   const ssWrap = document.createElement('div');
-  ssWrap.className = 'popup-screenshots';
+  ssWrap.className = 'screenshot-grid';
   popup.appendChild(ssWrap);
 
-  // controls for screenshots
+  // controls (project prev/next, then close)
   const controls = document.createElement('div');
   controls.className = 'popup-controls';
-  const prevBtn = document.createElement('button');
-  prevBtn.className = 'popup-btn';
-  prevBtn.textContent = '◀';
-  const nextBtn = document.createElement('button');
-  nextBtn.className = 'popup-btn';
-  nextBtn.textContent = '▶';
+  const siblings = getProjectSiblings(project);
+  let prevProjectBtn = null;
+  let nextProjectBtn = null;
+  if (siblings.list.length > 1) {
+    prevProjectBtn = document.createElement('button');
+    prevProjectBtn.className = 'popup-btn';
+    prevProjectBtn.textContent = '◀';
+    prevProjectBtn.setAttribute('aria-label', 'Previous project');
+    nextProjectBtn = document.createElement('button');
+    nextProjectBtn.className = 'popup-btn';
+    nextProjectBtn.textContent = '▶';
+    nextProjectBtn.setAttribute('aria-label', 'Next project');
+    controls.appendChild(prevProjectBtn);
+    controls.appendChild(nextProjectBtn);
+  }
   const closeBtn = document.createElement('button');
   closeBtn.className = 'popup-btn close';
   closeBtn.textContent = 'Close';
-  controls.appendChild(prevBtn);
-  controls.appendChild(nextBtn);
   controls.appendChild(closeBtn);
   popup.appendChild(controls);
 
@@ -406,63 +424,207 @@ function openProjectPopup(project) {
   popupRoot.appendChild(overlay);
   popupRoot.setAttribute('aria-hidden', 'false');
 
-  // screenshot handling
-  let currentIndex = 0;
+  // screenshot thumbnails
   const screenshots = (project.screenshots && project.screenshots.length) ? project.screenshots : [];
-  function renderScreenshot(i) {
-    ssWrap.innerHTML = ''; // clear
+  renderThumbnails();
+
+  function renderThumbnails() {
+    ssWrap.innerHTML = '';
     if (!screenshots.length) {
-      const placeholder = document.createElement('div');
-      placeholder.className = 'screenshot placeholder';
-      placeholder.textContent = '[ no screenshots ]';
-      ssWrap.appendChild(placeholder);
+      const empty = document.createElement('div');
+      empty.className = 'screenshot-grid-empty';
+      empty.textContent = '[ no screenshots ]';
+      ssWrap.appendChild(empty);
       return;
     }
-    currentIndex = ((i % screenshots.length) + screenshots.length) % screenshots.length;
-    const filename = screenshots[currentIndex];
-    const isVideo = filename.endsWith('mp4'); 
-    const t = isVideo ? 'video' : 'img';
-    const img = document.createElement(t);
-    img.className = 'screenshot';
-    img.alt = project.title + ' screenshot ' + (currentIndex + 1);
-    img.src = `media/${filename}`;
-    if (isVideo) {
-        img.autoplay = {};
-        img.loop = {};
-    }
-    img.onerror = () => {
-      img.replaceWith(createScreenshotFallback(screenshots[currentIndex]));
-    };
-    ssWrap.appendChild(img);
-
-    // caption
-    const caption = document.createElement('div');
-    caption.className = 'screenshot-caption';
-    caption.textContent = `${currentIndex + 1} / ${screenshots.length}`;
-    ssWrap.appendChild(caption);
+    screenshots.forEach((filename, idx) => {
+      ssWrap.appendChild(createThumb(filename, idx));
+    });
   }
 
-  function createScreenshotFallback(url) {
-    const fb = document.createElement('div');
-    fb.className = 'screenshot fallback';
-    fb.innerHTML = `<div>Failed to load</div><div>${escapeHtml(url)}</div>`;
+  function createThumb(filename, idx) {
+    const isVideo = /\.mp4$/i.test(filename);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'thumb';
+    btn.dataset.index = idx;
+    btn.setAttribute('aria-label', `Open screenshot ${idx + 1} of ${screenshots.length}`);
+
+    const placeholder = document.createElement('span');
+    placeholder.className = 'thumb-placeholder';
+    btn.appendChild(placeholder);
+
+    const media = document.createElement(isVideo ? 'video' : 'img');
+    media.className = 'thumb-img';
+    media.src = `media/${filename}`;
+    if (isVideo) {
+      media.muted = true;
+      media.preload = 'metadata';
+      media.playsInline = true;
+    } else {
+      media.alt = `${project.title} screenshot ${idx + 1}`;
+      media.loading = 'lazy';
+      media.decoding = 'async';
+    }
+    media.addEventListener(isVideo ? 'loadeddata' : 'load', () => {
+      btn.classList.add('loaded');
+    }, { once: true });
+    media.addEventListener('error', () => {
+      btn.classList.add('loaded', 'errored');
+      media.replaceWith(createFallbackEl(filename));
+    }, { once: true });
+    btn.appendChild(media);
+
+    if (isVideo) {
+      const badge = document.createElement('span');
+      badge.className = 'thumb-video-badge';
+      badge.textContent = '▶';
+      btn.appendChild(badge);
+    }
+
+    btn.addEventListener('click', () => openLightbox(idx, btn));
+    return btn;
+  }
+
+  function createFallbackEl(filename) {
+    const fb = document.createElement('span');
+    fb.className = 'thumb-fallback';
+    fb.textContent = 'Failed to load';
+    fb.title = filename;
     return fb;
   }
 
-  renderScreenshot(currentIndex);
-
-  prevBtn.addEventListener('click', () => renderScreenshot(currentIndex - 1));
-  nextBtn.addEventListener('click', () => renderScreenshot(currentIndex + 1));
   closeBtn.addEventListener('click', closePopup);
+  if (prevProjectBtn) prevProjectBtn.addEventListener('click', () => switchProject(-1));
+  if (nextProjectBtn) nextProjectBtn.addEventListener('click', () => switchProject(1));
+
+  function switchProject(delta) {
+    if (siblings.list.length <= 1) return;
+    const nextIndex = ((siblings.index + delta) % siblings.list.length + siblings.list.length) % siblings.list.length;
+    const nextProject = siblings.list[nextIndex];
+    closePopup();
+    openProjectPopup(nextProject);
+  }
 
   overlay.addEventListener('click', (ev) => {
     if (ev.target === overlay) closePopup();
   });
 
+  /* ---------- lightbox (screenshot viewer, layered above this popup) ---------- */
+  let lightbox = null; // { overlay, stage, caption, index, trigger }
+
+  function openLightbox(startIndex, trigger) {
+    if (!screenshots.length) return;
+
+    const lbOverlay = document.createElement('div');
+    lbOverlay.className = 'lightbox-overlay';
+    lbOverlay.tabIndex = -1;
+
+    const lb = document.createElement('div');
+    lb.className = 'lightbox';
+
+    const stage = document.createElement('div');
+    stage.className = 'lightbox-stage';
+
+    const lbControls = document.createElement('div');
+    lbControls.className = 'lightbox-controls';
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'lightbox-btn';
+    prevBtn.textContent = '◀';
+    prevBtn.setAttribute('aria-label', 'Previous screenshot');
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'lightbox-btn';
+    nextBtn.textContent = '▶';
+    nextBtn.setAttribute('aria-label', 'Next screenshot');
+    const lbCloseBtn = document.createElement('button');
+    lbCloseBtn.className = 'lightbox-btn close';
+    lbCloseBtn.textContent = 'Close';
+    lbControls.appendChild(prevBtn);
+    lbControls.appendChild(nextBtn);
+    lbControls.appendChild(lbCloseBtn);
+
+    const caption = document.createElement('div');
+    caption.className = 'lightbox-caption';
+
+    lb.appendChild(stage);
+    lb.appendChild(lbControls);
+    lb.appendChild(caption);
+    lbOverlay.appendChild(lb);
+    popupRoot.appendChild(lbOverlay);
+
+    lightbox = { overlay: lbOverlay, stage, caption, index: startIndex, trigger };
+
+    prevBtn.addEventListener('click', () => showLightboxMedia(lightbox.index - 1));
+    nextBtn.addEventListener('click', () => showLightboxMedia(lightbox.index + 1));
+    lbCloseBtn.addEventListener('click', closeLightbox);
+    lbOverlay.addEventListener('click', (ev) => {
+      if (ev.target.closest('.lightbox-media, .lightbox-btn')) return;
+      closeLightbox();
+    });
+
+    showLightboxMedia(startIndex);
+    lbOverlay.focus();
+  }
+
+  function showLightboxMedia(i) {
+    if (!lightbox) return;
+    const index = ((i % screenshots.length) + screenshots.length) % screenshots.length;
+    lightbox.index = index;
+    const filename = screenshots[index];
+    const isVideo = /\.mp4$/i.test(filename);
+
+    lightbox.stage.classList.remove('loaded');
+    lightbox.stage.innerHTML = '';
+    const spinner = document.createElement('span');
+    spinner.className = 'lightbox-placeholder';
+    lightbox.stage.appendChild(spinner);
+
+    const media = document.createElement(isVideo ? 'video' : 'img');
+    media.className = 'lightbox-media';
+    media.src = `media/${filename}`;
+    if (isVideo) {
+      media.controls = true;
+      media.autoplay = true;
+      media.loop = true;
+      media.muted = true;
+      media.playsInline = true;
+    } else {
+      media.alt = `${project.title} screenshot ${index + 1}`;
+      media.decoding = 'async';
+    }
+    media.addEventListener(isVideo ? 'loadeddata' : 'load', () => {
+      lightbox.stage.classList.add('loaded');
+    }, { once: true });
+    media.addEventListener('error', () => {
+      lightbox.stage.classList.add('loaded');
+      const fb = document.createElement('div');
+      fb.className = 'lightbox-fallback';
+      fb.innerHTML = `<div>Failed to load</div><div>${escapeHtml(filename)}</div>`;
+      media.replaceWith(fb);
+    }, { once: true });
+    lightbox.stage.appendChild(media);
+
+    lightbox.caption.textContent = `${index + 1} / ${screenshots.length}`;
+  }
+
+  function closeLightbox() {
+    if (!lightbox) return;
+    const trigger = lightbox.trigger;
+    lightbox.overlay.remove();
+    lightbox = null;
+    if (trigger) trigger.focus();
+  }
+
   function onKey(e) {
+    if (lightbox) {
+      if (e.key === 'Escape') closeLightbox();
+      else if (e.key === 'ArrowLeft') showLightboxMedia(lightbox.index - 1);
+      else if (e.key === 'ArrowRight') showLightboxMedia(lightbox.index + 1);
+      return;
+    }
     if (e.key === 'Escape') closePopup();
-    if (e.key === 'ArrowLeft') renderScreenshot(currentIndex - 1);
-    if (e.key === 'ArrowRight') renderScreenshot(currentIndex + 1);
+    else if (e.key === 'ArrowLeft') switchProject(-1);
+    else if (e.key === 'ArrowRight') switchProject(1);
   }
   document.addEventListener('keydown', onKey);
   overlay.focus();

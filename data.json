@@ -131,7 +131,9 @@
       "screenshots": [
         "lava1.mp4", "lava2.mp4", "lava3.jpg"
       ],
-      "links": []
+      "links": [
+        { "label": "Itch.io", "url": "https://mrzepisko.itch.io/lava-ld37" }
+      ]
     },
     {
       "id": "woodoku",
