@@ -25,6 +25,7 @@
       "id": "professional",
       "title": "Professional Work",
       "entries": [
+        { "type": "project", "projectId": "upstream" },
         { "type": "project", "projectId": "woodoku" },
         { "type": "project", "projectId": "enemy" },
         { "type": "project", "projectId": "warhospital" },
@@ -58,6 +59,18 @@
   ],
 
   "projects": [
+    {
+      "id": "upstream",
+      "title": "Where The Fish Pray",
+      "year": "*",
+      "role": "Gameplay Programmer @ Digital Pho",
+      "platform": "TBA",
+      "description": "Where the Fish Pray is a single-player survival adventure set in a world drowned by climate change. Explore the flooded open world by motorboat, tow barges loaded with cargo, gather resources, and build your cult's base. Catch fish and offer them as sacrifices by flushing them down the toilet, while uncovering the plans of your mysterious god.",
+      "screenshots": [ "upstream1.jpg", "upstream4.jpg", "upstream2.jpg", "upstream3.jpg" ],
+      "links": [
+        { "label": "Trailer", "url": "https://www.youtube.com/watch?v=7CIXm2fyxb4" }
+      ]
+    },
     {
       "id": "enemy",
       "title": "Enemy of the State",
