@@ -51,6 +51,7 @@
       "id": "prototypes",
       "title": "Other projects / prototypes",
       "entries": [
+        { "type": "project", "projectId": "towing" },
         { "type": "project", "projectId": "asteroids" },
         { "type": "project", "projectId": "springlade" },
         { "type": "project", "projectId": "lander" }
@@ -105,7 +106,7 @@
       "role": "Lead Game Programmer @ CYBERPHO",
       "platform": "PC / Steam",
       "description": "Guns, cars, lasers and explosions! Synth themed, cyber powered vehicular combat game, where you play as a contender in world’s most popular sports arena – the MEGADOME.",
-      "screenshots": [ "nw1.jpg", "nw2.jpg" ],
+      "screenshots": [ "nw1.jpg", "nw2.jpg", "nw3.jpg", "nw4.jpg", "nw5.jpg" ],
       "links": [
         { "label": "Steam Page", "url": "https://store.steampowered.com/app/760050/Nightwolf_Survive_the_Megadome/" }
       ]
@@ -182,6 +183,18 @@
       "description": "Adventure game prototype, created as a part of assignment for Game Dev School",
       "screenshots": [ "spr5.jpg", "spr4.jpg", "spr1.jpg", "spr2.jpg", "spr3.jpg" ],
       "links": []
+    },
+    {
+      "id": "towing",
+      "title": "Boat Towing",
+      "year": 2026,
+      "role": "p5.js",
+      "platform": "Browser Prototype",
+      "description": "A physics prototype exploring boat-to-barge towing: rope tension, slack and snap-threshold behavior, river current, and a vortex hazard, simulated in real time.",
+      "screenshots": [ "tow1.png" ],
+      "links": [
+        { "label": "Play Prototype", "url": "shameless-ai-prototypes/boats-tow/index.html" }
+      ]
     },
     {
       "id": "asteroids",

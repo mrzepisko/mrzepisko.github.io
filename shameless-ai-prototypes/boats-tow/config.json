@@ -87,9 +87,20 @@
   "hud": {
     "gauge": { "x": 1380, "y": 40, "width": 24, "height": 300 }
   },
+  "wrap": {
+    "edgeRadius": 90
+  },
+  "labels": {
+    "fontSize": 11,
+    "offset": 10,
+    "textColor": "#d8dee8",
+    "backgroundColor": [16, 20, 24, 190],
+    "borderColor": [255, 255, 255, 40]
+  },
   "debug": {
     "showTargetMarker": true,
     "showTensionValue": true,
-    "showVectors": false
+    "showVectors": false,
+    "showLabels": true
   }
 }

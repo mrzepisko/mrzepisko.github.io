@@ -7,6 +7,16 @@ const PhysicsRunner = (function () {
     return min + Math.random() * (max - min);
   }
 
+  function wrapDelta(value, dimension) {
+    if (value > dimension / 2) {
+      return value - dimension;
+    }
+    if (value < -dimension / 2) {
+      return value + dimension;
+    }
+    return value;
+  }
+
   function riverBandTop(config) {
     return config.river.topMargin;
   }
@@ -136,12 +146,11 @@ const PhysicsRunner = (function () {
     state.rope.attachY = attach.y;
 
     if (!state.rope.attached) {
-      state.rope.tension = 0;
       return;
     }
 
-    const dx = attach.x - state.player.x;
-    const dy = attach.y - state.player.y;
+    const dx = wrapDelta(attach.x - state.player.x, config.canvas.width);
+    const dy = wrapDelta(attach.y - state.player.y, config.canvas.height);
     const distance = Math.hypot(dx, dy);
 
     let tension = 0;
@@ -189,7 +198,6 @@ const PhysicsRunner = (function () {
     if (state.rope.overThresholdTimer >= config.rope.snapSustainSeconds) {
       state.rope.attached = false;
       state.rope.snapped = true;
-      state.rope.tension = 0;
     }
   }
 
@@ -278,6 +286,23 @@ const PhysicsRunner = (function () {
     state.towed.x += state.towed.vx * dt;
     state.towed.y += state.towed.vy * dt;
     state.towed.angle += state.towed.angularVelocity * dt;
+  }
+
+  function wrapEntity(body, config) {
+    const width = config.canvas.width;
+    const height = config.canvas.height;
+
+    if (body.x < 0) {
+      body.x += width;
+    } else if (body.x > width) {
+      body.x -= width;
+    }
+
+    if (body.y < 0) {
+      body.y += height;
+    } else if (body.y > height) {
+      body.y -= height;
+    }
   }
 
   function resolvePairCircleCircle(a, aRadius, aInvMass, b, bRadius, bInvMass, restitution) {
@@ -416,13 +441,17 @@ const PhysicsRunner = (function () {
     refreshTowedMassProperties(state, config);
     stepPlayerMovement(state, input, dt, config);
     stepRope(state, dt, config);
-    stepGaugePeak(state, dt, config);
+    if (!state.rope.snapped) {
+      stepGaugePeak(state, dt, config);
+    }
 
     applyZoneForces(state.player, config.player.mass, dt, config);
     applyZoneForces(state.towed, state.towed.mass, dt, config);
     stepFlowObstacles(state, dt, config);
 
     applyDragAndIntegrate(state, dt, config);
+    wrapEntity(state.player, config);
+    wrapEntity(state.towed, config);
     resolveCollisions(state, config);
   }
 

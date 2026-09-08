@@ -18,13 +18,45 @@
       <div>Threshold: <span id="thresholdValue">0</span></div>
       <div>State: <span id="ropeState">Attached</span></div>
     </div>
-    <button id="resetButton" type="button">Reset</button>
+    <div id="hud-buttons">
+      <button id="helpButton" type="button" title="About this prototype">?</button>
+      <button id="resetButton" type="button">Reset</button>
+    </div>
+  </div>
+
+  <div id="infoOverlay">
+    <div id="infoModal" role="dialog" aria-labelledby="infoTitle">
+      <button id="infoCloseButton" type="button" aria-label="Close">&times;</button>
+      <h2 id="infoTitle">Boat Towing Prototype</h2>
+      <p>A physics sandbox: steer a boat towing an object on a rope, through a river current, obstacles, and a whirlpool.</p>
+
+      <h3>Controls</h3>
+      <p>Click/tap and hold anywhere on the canvas to steer the boat toward that point. The left panel sliders tune the physics live. Reset restarts the scene.</p>
+
+      <h3>World</h3>
+      <ul>
+        <li><strong>Boat</strong> &mdash; the vessel you steer.</li>
+        <li><strong>Towed Object</strong> &mdash; dragged behind the boat by the rope.</li>
+        <li><strong>Static</strong> &mdash; fixed obstacles.</li>
+        <li><strong>Dynamic Obstacle</strong> &mdash; drifts along with the river current.</li>
+        <li><strong>Whirlpool</strong> &mdash; pulls and swirls anything nearby.</li>
+      </ul>
+
+      <h3>Rope Gauge</h3>
+      <p>The vertical bar tracks rope <strong>Tension</strong> (current pull), <strong>Threshold</strong> (the level that starts a snap countdown), <strong>Peak</strong> (highest tension reached), and <strong>Limit</strong> (the gauge's reference scale). Sustain tension above the threshold and the rope snaps.</p>
+
+      <h3>Screen Wrap</h3>
+      <p>Both the boat and the towed object wrap around the screen edges, Asteroids-style &mdash; a ghost preview appears near an edge before the crossing happens.</p>
+
+      <button id="infoGotItButton" type="button">Got it</button>
+    </div>
   </div>
 
   <script src="physics.js"></script>
   <script src="render.js"></script>
   <script src="input.js"></script>
   <script src="controls.js"></script>
+  <script src="popup.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

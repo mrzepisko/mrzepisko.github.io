@@ -12,6 +12,7 @@ function setup() {
   state = PhysicsRunner.createState(config);
   initInput();
   initControls(config);
+  initPopup();
 }
 
 function draw() {
