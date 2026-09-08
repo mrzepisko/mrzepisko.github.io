@@ -1,0 +1,47 @@
+{
+  "canvas": {
+    "width": 400,
+    "height": 400,
+    "background": "#101418"
+  },
+  "needle": {
+    "baseY": 15,
+    "tipY": 100,
+    "color": "#3aa0ff",
+    "tipColor": "#ff9f3a",
+    "strokeWeight": 5
+  },
+  "bend": {
+    "control1": { "vLerp": 0.4, "xAmplitude": 4 },
+    "control2": { "vLerp": 0.8, "xAmplitude": 32 }
+  },
+  "curve": {
+    "color": "#ffd23f",
+    "strokeWeight": 2
+  },
+  "press": {
+    "maxDepth": 60
+  },
+  "surface": {
+    "color": "#00003c",
+    "thickness": 6,
+    "marginBottom": 6
+  },
+  "handle": {
+    "color": "#8b93a1",
+    "width": 10,
+    "height": 200,
+    "rotationBlend": 0.19
+  },
+  "scene": {
+    "scale": 2,
+    "horizontalRange": 50,
+    "horizontalSmoothing": 0.12
+  },
+  "debug": {
+    "showHelpers": true,
+    "helperColor": "#b263ff",
+    "helperLineColor": "#a0a0a0",
+    "labelColor": "#d8dee8"
+  }
+}

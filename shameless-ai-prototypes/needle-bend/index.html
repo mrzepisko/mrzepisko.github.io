@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Needle Bend Prototype</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+</head>
+<body>
+  <div id="controls"></div>
+
+  <div id="canvas-container"></div>
+
+  <div id="hud">
+    <div id="hud-readout">
+      <div>t: <span id="tValue">0.00</span></div>
+      <div>Rotation: <span id="rotationValue">0.0</span>&deg;</div>
+      <div>State: <span id="pressState">Free</span></div>
+    </div>
+    <div id="hud-buttons">
+      <button id="helpButton" type="button" title="About this prototype">?</button>
+    </div>
+  </div>
+
+  <div id="infoOverlay">
+    <div id="infoModal" role="dialog" aria-labelledby="infoTitle">
+      <button id="infoCloseButton" type="button" aria-label="Close">&times;</button>
+      <h2 id="infoTitle">Needle Bend Prototype</h2>
+      <p>A simulation of a flexible needle bending as it presses against a flat surface, rendered as a cubic B&eacute;zier curve driven entirely by cursor position.</p>
+
+      <h3>How It Works</h3>
+      <p>The tool's held end (<strong>p0</strong>, with the gray handle pinned to it) follows your cursor. The tip (<strong>p3</strong>) can never cross the baseline shown near the bottom edge. Once the tip touches that baseline, pressing further down feeds a value <strong>t</strong> from 0 (just touching, straight) to 1 (fully bent) over the <strong>Max Depth</strong> of overshoot &mdash; there's no clock involved, the shape is purely a function of how far you're currently pressing. The whole tool's orientation eases from 0 at rest to lying flat against the surface at full bend. The handle also gets its own small cosmetic tilt on top of that, blending the direction at <strong>p0</strong> and at <strong>p1</strong> per <strong>Angle Blend</strong> &mdash; purely visual, it never affects the needle's shape or position.</p>
+
+      <h3>Controls</h3>
+      <p>The left panel tunes the simulation live: the needle's base position, how far each bend control point is pulled and where it sits along the shaft, how deep a press it takes to reach full bend, and the handle's cosmetic angle blend. Enable <strong>Show Helpers</strong> to reveal the curve's four defining points (<strong>p0</strong>&ndash;<strong>p3</strong>) and the construction lines between them.</p>
+
+      <button id="infoGotItButton" type="button">Got it</button>
+    </div>
+  </div>
+
+  <script src="curve.js"></script>
+  <script src="render.js"></script>
+  <script src="controls.js"></script>
+  <script src="popup.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

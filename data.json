@@ -54,7 +54,8 @@
         { "type": "project", "projectId": "towing" },
         { "type": "project", "projectId": "asteroids" },
         { "type": "project", "projectId": "springlade" },
-        { "type": "project", "projectId": "lander" }
+        { "type": "project", "projectId": "lander" },
+        { "type": "project", "projectId": "needle" }
       ]
     }
   ],
@@ -194,6 +195,18 @@
       "screenshots": [ "tow1.png" ],
       "links": [
         { "label": "Play Prototype", "url": "shameless-ai-prototypes/boats-tow/index.html" }
+      ]
+    },
+    {
+      "id": "needle",
+      "title": "Needle Bend",
+      "year": 2021,
+      "role": "p5.js",
+      "platform": "Browser Prototype",
+      "description": "A physics prototype exploring a flexible needle pressed against a flat surface: cursor-driven bend depth, dynamic rotation that flattens the tip at full press, and live-tunable curve parameters.",
+      "screenshots": [ "needle1.png" ],
+      "links": [
+        { "label": "Play Prototype", "url": "shameless-ai-prototypes/needle-bend/" }
       ]
     },
     {
