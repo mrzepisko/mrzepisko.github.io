@@ -1,6 +1,7 @@
 let state;
 let config;
 let accumulator = 0;
+let lastMode = null;
 
 function preload() {
   config = loadJSON('config.json');
@@ -13,9 +14,11 @@ function setup() {
 
   const webglSupported = Iso3D.isWebGLSupported();
   config.debug.isometric = webglSupported;
+  Persistence.applyViewMode(config, webglSupported);
   initViewToggle(webglSupported);
 
   state = FishingRunner.createState(config);
+  Persistence.applyStats(state);
   initInput();
   initControls(config);
   initConfigToggle();
@@ -40,6 +43,7 @@ function initViewToggle(webglSupported) {
     button.addEventListener('click', () => {
       config.debug.isometric = !config.debug.isometric;
       updateLabel();
+      Persistence.saveViewMode(config.debug.isometric);
     });
   }
 
@@ -56,6 +60,14 @@ function draw() {
     accumulator -= config.simulation.fixedTimestepSeconds;
     steps++;
   }
+
+  // A catch/junk/lost result only ever changes the counts and catch log at
+  // the instant its mode is entered - saving right on that edge (instead
+  // of every frame) keeps this from hitting localStorage 60 times a second.
+  if (state.mode === 'result' && lastMode !== 'result') {
+    Persistence.saveStats(state);
+  }
+  lastMode = state.mode;
 
   renderFrame(this, state, config);
   updateHud(state, config);

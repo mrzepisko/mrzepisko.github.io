@@ -1,31 +1,38 @@
 // Only used in isometric mode - 2D mode keeps the plain vector shapes as-is.
-// Loads the real OBJ models once and bakes each to a small offscreen WEBGL
-// graphics buffer (a static "sprite"), which the main 2D canvas then just
+// Loads the real OBJ models once, then redraws each into a small offscreen
+// WEBGL graphics buffer every frame, which the main 2D canvas then just
 // draws with p.image() like any other picture. That keeps the rest of the
-// game entirely on the regular P2D canvas; only this bake step touches
-// WEBGL, and it's deferred until isometric mode is actually switched on
-// (never at startup) so a page that never uses it never needs a WebGL
-// context at all.
+// game entirely on the regular P2D canvas; only this step touches WEBGL,
+// and it's skipped whenever isometric mode is off, so a page that never
+// uses it never needs a WebGL context at all.
 //
-// WebGL isn't guaranteed to be available everywhere (disabled, blocked,
-// context limits, etc.), so baking is wrapped defensively - if it fails,
-// isometric mode just quietly keeps drawing the flat vector shapes instead
-// of taking the whole prototype down.
+// This used to render each model ONCE and cache the result forever, on the
+// theory that a browser-level "no user input detected" canvas-read
+// protection just needed one successful attempt to get past. In practice
+// that gate turned out to be far less predictable than that - a handful of
+// retries, even ones fired synchronously from real click/touch handlers,
+// still weren't reliably enough. So instead of trying to outsmart exactly
+// when the browser will allow it: just try again every single frame,
+// forever. A frame that gets blocked costs one frame of the flat vector
+// fallback, not the rest of the session - and the redraw itself is cheap
+// (a handful of triangles into a small buffer), so there's no real cost to
+// never giving up.
 //
 // Orientation was calibrated by hand against the actual models (see the
 // session that built this): the fish model's head points toward world -X,
-// the boat's bow toward world -Z. The fish is baked from directly overhead
-// so it can be 2D-rotated to face any swim direction without distortion -
-// any camera tilt would make that rotation look wrong except at the exact
-// angle it was baked at. The boat never rotates at runtime, so it's baked
-// from a nicer 3/4 "hero" angle instead.
+// the boat's bow toward world -Z. The fish is rendered from directly
+// overhead so it can be 2D-rotated to face any swim direction without
+// distortion - any camera tilt would make that rotation look wrong except
+// at the exact angle it was rendered at. The boat never rotates at
+// runtime, so it's rendered from a nicer 3/4 "hero" angle instead.
 const Iso3D = (function () {
   let boatModel = null;
   let fishModel = null;
   let texture = null;
+  let boatGraphics = null;
+  let fishGraphics = null;
   let boatSprite = null;
   let fishSprite = null;
-  let attempted = false;
 
   // A cheap, direct check independent of p5/model loading - just "can this
   // browser make a WebGL context at all", used to decide the default view
@@ -46,34 +53,25 @@ const Iso3D = (function () {
     texture = p.loadImage('assets/Textures/colormap.png');
   }
 
-  function bakeSprite(p, model, size, orthoHalfExtent, eye, up) {
-    const g = p.createGraphics(size, size, p.WEBGL);
+  function renderInto(g, model, orthoHalfExtent, eye, up) {
     g.clear();
     g.ortho(-orthoHalfExtent, orthoHalfExtent, -orthoHalfExtent, orthoHalfExtent, -20, 20);
     g.camera(eye[0], eye[1], eye[2], 0, 0, 0, up[0], up[1], up[2]);
     g.noStroke();
     g.texture(texture);
     g.model(model);
-    return g;
-  }
-
-  // Baking draws the model onto a WEBGL graphics buffer and then blits that
-  // onto the main 2D canvas - Chrome treats that as a canvas-data read and
-  // blocks it (silently, but warns in the console) until the page has seen
-  // real user input. The very first frame runs before the "Got it" click,
-  // so without this check baking would race that gesture and lose.
-  function hasUserActivation() {
-    return !navigator.userActivation || navigator.userActivation.hasBeenActive;
   }
 
   function ensureBaked(p, config) {
-    if (attempted || !hasUserActivation()) {
-      return;
-    }
-    attempted = true; // only ever try once, success or failure
-
     try {
       const cfg = config.iso;
+      if (!boatGraphics) {
+        boatGraphics = p.createGraphics(cfg.boatBakeSize, cfg.boatBakeSize, p.WEBGL);
+      }
+      if (!fishGraphics) {
+        fishGraphics = p.createGraphics(cfg.fishBakeSize, cfg.fishBakeSize, p.WEBGL);
+      }
+
       const elevation = Math.asin(cfg.verticalRatio);
       const azimuth = (cfg.boatAzimuthDegrees * Math.PI) / 180;
       const R = 5;
@@ -87,10 +85,11 @@ const Iso3D = (function () {
         -R * Math.cos(elevation) * Math.cos(azimuth),
       ];
 
-      boatSprite = bakeSprite(p, boatModel, cfg.boatBakeSize, cfg.boatBakeOrtho, boatEye, [0, 1, 0]);
-      fishSprite = bakeSprite(p, fishModel, cfg.fishBakeSize, cfg.fishBakeOrtho, [0, -R, 0.0001], [0, 0, -1]);
+      renderInto(boatGraphics, boatModel, cfg.boatBakeOrtho, boatEye, [0, 1, 0]);
+      renderInto(fishGraphics, fishModel, cfg.fishBakeOrtho, [0, -R, 0.0001], [0, 0, -1]);
+      boatSprite = boatGraphics;
+      fishSprite = fishGraphics;
     } catch (err) {
-      console.warn('Iso3D: could not bake 3D sprites, falling back to flat shapes -', err);
       boatSprite = null;
       fishSprite = null;
     }

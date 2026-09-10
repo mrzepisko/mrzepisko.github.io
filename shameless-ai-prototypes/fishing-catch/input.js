@@ -31,6 +31,7 @@ function initInput() {
   if (button) {
     button.addEventListener('click', () => {
       _resetRequested = true;
+      Persistence.clear();
     });
   }
 

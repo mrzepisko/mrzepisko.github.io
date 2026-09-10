@@ -86,7 +86,9 @@ const FishingRunner = (function () {
         x: school.x + Math.cos(angle) * radius,
         y: school.y + Math.sin(angle) * radius,
         angle: heading,
-        targetAngle: heading,
+        wanderAngle: heading,
+        smoothSteerX: Math.cos(heading),
+        smoothSteerY: Math.sin(heading),
         turnTimer: randomRange(0.5, 1.5),
       });
     }
@@ -153,6 +155,93 @@ const FishingRunner = (function () {
     return buildFreshState(config);
   }
 
+  // Classic boids: separation keeps fish from stacking on each other,
+  // alignment/cohesion keep them loosely schooling together, and a home
+  // pull reels a fish back once it's actually outside the school's outer
+  // zone - not before, so drifting out briefly during normal flocking is
+  // fine, it's only a strayed fish that gets steered back. Neighbors are
+  // read from the school's current (pre-move) positions so every fish
+  // reacts to where the others actually are this frame, not to whichever
+  // of them happened to already move.
+  function computeBoidHeading(fish, school, config) {
+    const cfg = config.schools;
+    let sepX = 0;
+    let sepY = 0;
+    let alignX = 0;
+    let alignY = 0;
+    let cohX = 0;
+    let cohY = 0;
+    let neighborCount = 0;
+
+    for (const other of school.fish) {
+      if (other === fish) {
+        continue;
+      }
+      const dx = other.x - fish.x;
+      const dy = other.y - fish.y;
+      const dist = Math.hypot(dx, dy);
+
+      if (dist < cfg.boidSeparationRadius && dist > 0.0001) {
+        sepX -= dx / dist;
+        sepY -= dy / dist;
+      }
+
+      if (dist < cfg.boidPerceptionRadius) {
+        alignX += Math.cos(other.angle);
+        alignY += Math.sin(other.angle);
+        cohX += other.x;
+        cohY += other.y;
+        neighborCount++;
+      }
+    }
+
+    let steerX = sepX * cfg.boidSeparationWeight;
+    let steerY = sepY * cfg.boidSeparationWeight;
+
+    if (neighborCount > 0) {
+      steerX += (alignX / neighborCount) * cfg.boidAlignmentWeight;
+      steerY += (alignY / neighborCount) * cfg.boidAlignmentWeight;
+
+      const cohCenterX = cohX / neighborCount;
+      const cohCenterY = cohY / neighborCount;
+      const cohDist = distance(fish.x, fish.y, cohCenterX, cohCenterY);
+      if (cohDist > 0.0001) {
+        steerX += ((cohCenterX - fish.x) / cohDist) * cfg.boidCohesionWeight;
+        steerY += ((cohCenterY - fish.y) / cohDist) * cfg.boidCohesionWeight;
+      }
+    }
+
+    const homeDist = distance(fish.x, fish.y, school.x, school.y);
+    const strayAmount = Math.max(0, homeDist - school.outerRadius) / (school.outerRadius * 0.5);
+    if (strayAmount > 0 && homeDist > 0.0001) {
+      steerX += ((school.x - fish.x) / homeDist) * strayAmount * cfg.boidHomeWeight;
+      steerY += ((school.y - fish.y) / homeDist) * strayAmount * cfg.boidHomeWeight;
+    }
+
+    // A slow, per-fish drifting angle rather than raw noise - without it
+    // the flock settles into an oddly stable rotation once separation,
+    // alignment and cohesion balance out.
+    steerX += Math.cos(fish.wanderAngle) * cfg.boidWanderWeight;
+    steerY += Math.sin(fish.wanderAngle) * cfg.boidWanderWeight;
+
+    // Low-pass filter the desired DIRECTION itself, not just how fast the
+    // fish turns toward it (that's stepTowardAngle's job, below). Without
+    // this, ordinary frame-to-frame changes - a neighbor crossing in or
+    // out of separation/perception range, the home pull switching on right
+    // at the outer-radius boundary - each nudge the raw target angle by a
+    // few degrees, and a turn-rate cap alone still faithfully chases every
+    // one of those little nudges, which reads as a constant wobble rather
+    // than a smooth swim. Blending unit vectors (not raw, wildly varying
+    // magnitudes) keeps this stable even when the steering forces mostly
+    // cancel out.
+    const mag = Math.hypot(steerX, steerY);
+    const dirX = mag > 0.0001 ? steerX / mag : Math.cos(fish.angle);
+    const dirY = mag > 0.0001 ? steerY / mag : Math.sin(fish.angle);
+    fish.smoothSteerX = lerp(fish.smoothSteerX, dirX, cfg.boidSteerSmoothing);
+    fish.smoothSteerY = lerp(fish.smoothSteerY, dirY, cfg.boidSteerSmoothing);
+    return Math.atan2(fish.smoothSteerY, fish.smoothSteerX);
+  }
+
   function stepFishWander(state, dt, config) {
     for (const school of state.schools) {
       for (const fish of school.fish) {
@@ -166,15 +255,12 @@ const FishingRunner = (function () {
 
         fish.turnTimer -= dt;
         if (fish.turnTimer <= 0) {
-          fish.targetAngle += randomRange(-1, 1);
+          fish.wanderAngle += randomRange(-1, 1);
           fish.turnTimer = randomRange(0.5, 1.5);
         }
 
-        if (distance(fish.x, fish.y, school.x, school.y) > school.wanderRadius) {
-          fish.targetAngle = Math.atan2(school.y - fish.y, school.x - fish.x);
-        }
-
-        fish.angle = stepTowardAngle(fish.angle, fish.targetAngle, config.schools.fishTurnRate * dt);
+        const desiredAngle = computeBoidHeading(fish, school, config);
+        fish.angle = stepTowardAngle(fish.angle, desiredAngle, config.schools.fishTurnRate * dt);
 
         const speed = config.schools.fishSpeed;
         fish.x += Math.cos(fish.angle) * speed * dt;
@@ -713,7 +799,9 @@ const FishingRunner = (function () {
       x: source.x,
       y: source.y,
       angle: source.angle + halfSpread,
-      targetAngle: source.angle + halfSpread,
+      wanderAngle: source.angle + halfSpread,
+      smoothSteerX: Math.cos(source.angle + halfSpread),
+      smoothSteerY: Math.sin(source.angle + halfSpread),
       turnTimer: randomRange(0.5, 1.5),
     };
     source.angle -= halfSpread;

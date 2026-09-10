@@ -87,6 +87,7 @@ function initPopup() {
   function closeOverlay() {
     overlay.hidden = true;
     InputGate.resume('popup');
+    Persistence.markTutorialSeen();
   }
 
   if (closeButton) {
@@ -111,5 +112,13 @@ function initPopup() {
     }
   });
 
-  openOverlay();
+  // The markup has no `hidden` attribute of its own (it's meant to show up
+  // instantly on a first visit, before any script has had a chance to run)
+  // - so a returning visitor needs it explicitly hidden here, not just
+  // left alone.
+  if (Persistence.hasSeenTutorial()) {
+    overlay.hidden = true;
+  } else {
+    openOverlay();
+  }
 }

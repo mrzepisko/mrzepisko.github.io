@@ -12,7 +12,7 @@ const CONTROL_SECTIONS = [
   },
   {
     title: 'Fish School',
-    controls: [{ label: 'Fish Speed', path: 'schools.fishSpeed', min: 0, max: 100, step: 2 }],
+    controls: [{ label: 'Fish Speed', path: 'schools.fishSpeed', min: 0, max: 200, step: 5 }],
   },
   {
     title: 'Debug',
