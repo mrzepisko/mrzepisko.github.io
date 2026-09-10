@@ -51,6 +51,7 @@
       "id": "prototypes",
       "title": "Other projects / prototypes",
       "entries": [
+        { "type": "project", "projectId": "fishing" },
         { "type": "project", "projectId": "towing" },
         { "type": "project", "projectId": "asteroids" },
         { "type": "project", "projectId": "springlade" },
@@ -186,15 +187,27 @@
       "links": []
     },
     {
+      "id": "fishing",
+      "title": "Fishing Prototype",
+      "year": 2026,
+      "role": "p5.js",
+      "platform": "p5 Prototype",
+      "description": "Drag back to cast into schools of rising difficulty, aim for a fast bite, then land a timing-based QTE reel-in for a quality catch, one tier tougher each time.",
+      "screenshots": [ "fish1.png", "fish2.png" ],
+      "links": [
+        { "label": "Play Prototype", "url": "shameless-ai-prototypes/fishing-catch/" }
+      ]
+    },
+    {
       "id": "towing",
       "title": "Boat Towing",
       "year": 2026,
       "role": "p5.js",
-      "platform": "Browser Prototype",
+      "platform": "p5 Prototype",
       "description": "A physics prototype exploring boat-to-barge towing: rope tension, slack and snap-threshold behavior, river current, and a vortex hazard, simulated in real time.",
       "screenshots": [ "tow1.png" ],
       "links": [
-        { "label": "Play Prototype", "url": "shameless-ai-prototypes/boats-tow/index.html" }
+        { "label": "Play Prototype", "url": "shameless-ai-prototypes/boats-tow/" }
       ]
     },
     {
@@ -202,7 +215,7 @@
       "title": "Needle Bend",
       "year": 2021,
       "role": "p5.js",
-      "platform": "Browser Prototype",
+      "platform": "p5 Prototype",
       "description": "A physics prototype exploring a flexible needle pressed against a flat surface: cursor-driven bend depth, dynamic rotation that flattens the tip at full press, and live-tunable curve parameters.",
       "screenshots": [ "needle1.png" ],
       "links": [
@@ -224,6 +237,7 @@
       "title": "Rocket Lander",
       "year": 2018,
       "role": "dev",
+      "platform": "Recruitment Assignment",
       "description": "'Moon Lander' inspired recruitment assignment",
       "screenshots": [ "rl1.png", "rl2.png", "rl3.png" ],
       "links": []

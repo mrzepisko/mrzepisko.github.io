@@ -43,8 +43,19 @@ function initInput() {
   document.addEventListener('touchend', () => InputGate.resume('controls'));
 }
 
-function mousePressed() {
-  if (InputGate.isSuspended()) {
+// p5 binds mouse/touch listeners on the whole document, not just the
+// canvas - without this, pressing a HUD button (Reset, ?, cfg...) also
+// starts an aim, since that press still reaches mousePressed/touchStarted.
+// Releasing is deliberately NOT gated the same way: a drag that started on
+// the canvas and ends over a button must still register as a release, or
+// _aimActive would get stuck true forever.
+function isCanvasTarget(event) {
+  const canvas = document.querySelector('#canvas-container canvas');
+  return !!(canvas && event && event.target === canvas);
+}
+
+function handlePressStart(event) {
+  if (InputGate.isSuspended() || !isCanvasTarget(event)) {
     return;
   }
   _aimActive = true;
@@ -52,7 +63,7 @@ function mousePressed() {
   _pressEdge = true;
 }
 
-function mouseReleased() {
+function handlePressEnd() {
   if (InputGate.isSuspended()) {
     _aimActive = false;
     return;
@@ -61,6 +72,43 @@ function mouseReleased() {
     _justReleased = true;
   }
   _aimActive = false;
+}
+
+function mousePressed(event) {
+  handlePressStart(event);
+}
+
+function mouseReleased() {
+  handlePressEnd();
+}
+
+// p5 calls these instead of mousePressed/mouseReleased for touch input, so
+// dragging to aim and tapping the reel bar both work on a phone - without
+// them, touch never triggers the mouse callbacks at all (unlike a real
+// mouse click, a touch tap has no browser-synthesized mousedown fallback
+// once the touch's own default handling is suppressed for the drag).
+//
+// These fire for EVERY touch on the page, not just the canvas (same reason
+// isCanvasTarget exists above). Returning false suppresses the browser's
+// default touch behavior - which is exactly what we want for a canvas drag
+// (no page scroll), but for a touch that lands on a button it would also
+// swallow the compatibility click the button relies on to fire at all,
+// which is why a tap on a button needed two or three tries to register.
+// A touch's target is fixed to wherever it started for its whole gesture
+// (unlike mouse, which retargets as the pointer moves), so this stays
+// consistent from touchStarted through touchEnded.
+function touchStarted(event) {
+  handlePressStart(event);
+  return !isCanvasTarget(event);
+}
+
+function touchEnded(event) {
+  handlePressEnd();
+  return !isCanvasTarget(event);
+}
+
+function touchMoved(event) {
+  return !isCanvasTarget(event);
 }
 
 function keyPressed() {

@@ -57,8 +57,17 @@ const Iso3D = (function () {
     return g;
   }
 
+  // Baking draws the model onto a WEBGL graphics buffer and then blits that
+  // onto the main 2D canvas - Chrome treats that as a canvas-data read and
+  // blocks it (silently, but warns in the console) until the page has seen
+  // real user input. The very first frame runs before the "Got it" click,
+  // so without this check baking would race that gesture and lose.
+  function hasUserActivation() {
+    return !navigator.userActivation || navigator.userActivation.hasBeenActive;
+  }
+
   function ensureBaked(p, config) {
-    if (attempted) {
+    if (attempted || !hasUserActivation()) {
       return;
     }
     attempted = true; // only ever try once, success or failure

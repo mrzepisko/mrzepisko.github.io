@@ -18,6 +18,7 @@ function setup() {
   state = FishingRunner.createState(config);
   initInput();
   initControls(config);
+  initConfigToggle();
   initPopup();
 }
 

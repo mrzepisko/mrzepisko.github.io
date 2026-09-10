@@ -2,6 +2,8 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
+  width: 100%;
+  overflow-x: hidden;
   background: #05070a;
   color: #d8dee8;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
@@ -16,10 +18,20 @@ body {
 
 #canvas-container {
   display: flex;
+  max-width: 100%;
 }
 
 #canvas-container canvas {
   display: block;
+  /* The game's world is a fixed 1440x900 buffer - this only shrinks how it's
+     displayed on a narrow screen. p5 keeps mouse/touch coordinates correct
+     against the buffer regardless of this CSS size, and !important beats
+     whatever inline width/height p5 sets on the canvas element itself. */
+  max-width: min(100%, 1440px) !important;
+  max-height: min(100vh, 900px) !important;
+  width: auto !important;
+  height: auto !important;
+  touch-action: none;
   cursor: crosshair;
 }
 
@@ -73,6 +85,32 @@ body {
 #helpButton {
   padding: 6px 10px;
   font-weight: bold;
+}
+
+/* Sits right under the stats readout rather than in the button row, since
+   it opens a whole side panel rather than doing something in place. */
+#configToggleButton {
+  display: block;
+  width: 100%;
+  min-width: 140px;
+  box-sizing: border-box;
+  margin-top: 8px;
+  background: rgba(16, 20, 24, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #8b93a1;
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+#configToggleButton:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #d8dee8;
 }
 
 #viewToggleButton {
@@ -132,8 +170,25 @@ body {
   background: rgba(16, 20, 24, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 4px;
-  padding: 10px 12px;
+  padding: 10px 30px 10px 12px;
   font-size: 12px;
+}
+
+#controlsCloseButton {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: #8b93a1;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+#controlsCloseButton:hover {
+  color: #d8dee8;
 }
 
 .controls-section + .controls-section {
@@ -200,9 +255,13 @@ body {
 
 #infoModal {
   position: relative;
-  width: 420px;
+  width: 640px;
   max-width: calc(100vw - 48px);
   max-height: calc(100vh - 48px);
+  /* Without this, the 24px padding and border below get added on top of
+     the max-height/max-width instead of eating into them, so the "leave a
+     48px margin around it" calc() above only actually leaves ~2px. */
+  box-sizing: border-box;
   overflow-y: auto;
   background: #101418;
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -278,4 +337,173 @@ body {
 
 #infoGotItButton:hover {
   background: rgba(58, 160, 255, 0.28);
+}
+
+#tutorialSeparator {
+  border: none;
+  border-top: 1px dashed rgba(255, 255, 255, 0.15);
+  margin: 16px 0;
+}
+
+#tutorialHeading {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8b93a1;
+  margin-bottom: 8px;
+}
+
+#tutorialStage {
+  width: 100%;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a1f2b;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+@media (min-width: 700px) {
+  #tutorialStage {
+    height: 300px;
+  }
+}
+
+/* A phone-size viewport can't spare 220px for the stage on top of the
+   modal's own text and controls without forcing a lot of scrolling to
+   reach anything below it - reuses the same width/height breakpoints as
+   the rest of the mobile layout further down this file. */
+@media (max-width: 700px), (max-height: 500px) {
+  #tutorialStage {
+    height: 150px;
+  }
+}
+
+#tutorialImg {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+#tutorialCaption {
+  color: #c8cfd9;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 10px 0;
+  min-height: 3.2em;
+}
+
+#tutorialControls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+#tutorialPrev,
+#tutorialNext {
+  background: rgba(58, 160, 255, 0.15);
+  border: 1px solid rgba(58, 160, 255, 0.5);
+  color: #d8dee8;
+  font-family: inherit;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#tutorialPrev:hover,
+#tutorialNext:hover {
+  background: rgba(58, 160, 255, 0.28);
+}
+
+#tutorialDots {
+  display: flex;
+  gap: 6px;
+}
+
+.tutorial-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.tutorial-dot.active {
+  background: #3aa0ff;
+  border-color: #3aa0ff;
+}
+
+/* ===== Mobile layout ===== */
+/* The debug tuning panel and the top-right HUD are both desktop overlays
+   that assume plenty of spare width around a full-size canvas. Below this
+   width the canvas itself is the majority of the screen, so the debug panel
+   is hidden outright (it's dev-only) and the HUD drops out of fixed
+   positioning to stack under the canvas in normal document flow instead. */
+@media (max-width: 700px) {
+  body {
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 10px 0 20px;
+    min-height: auto;
+  }
+
+  #controls {
+    display: none;
+  }
+
+  #hud {
+    /* Deliberately left static (not given a z-index) - #controls is still
+       position:fixed and so always paints above static content regardless
+       of DOM order. That's fine now: the panel has its own close button,
+       so the HUD doesn't need to out-rank it in stacking order to stay
+       reachable while the panel is open. Giving the HUD a z-index here
+       previously made it paint THROUGH the panel instead of being cleanly
+       covered by it, garbling both. */
+    position: static;
+    align-items: stretch;
+    width: 100%;
+    max-width: 460px;
+    margin-top: 10px;
+    padding: 0 10px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    pointer-events: auto;
+  }
+
+  #hud-readout {
+    text-align: center;
+    min-width: 0;
+    width: auto;
+    box-sizing: border-box;
+  }
+
+  #hud-buttons {
+    justify-content: center;
+    width: 100%;
+  }
+
+  #catchLogTable {
+    font-size: 10px;
+  }
+}
+
+/* A landscape phone can easily be wider than the 700px cutoff above while
+   still being too short to fit the full-size canvas plus the debug panel -
+   that's a height problem, not a width one, so it needs its own check. The
+   canvas already caps itself to the viewport height (see max-height above);
+   this just clears the debug panel out of the way so it can't still overlap
+   whatever's left of a canvas that's now been squeezed short and wide. The
+   top-right HUD stays as a fixed overlay here, since a short-but-wide screen
+   has the spare width for it beside the canvas.
+   */
+@media (max-height: 500px) {
+  #controls {
+    display: none;
+  }
 }

@@ -8,7 +8,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
 </head>
 <body>
-  <div id="controls"></div>
+  <div id="controls">
+    <button id="controlsCloseButton" type="button" aria-label="Close tuning panel">&times;</button>
+  </div>
 
   <div id="canvas-container"></div>
 
@@ -21,6 +23,7 @@
       <div>Avg Catch: <span id="avgCatchValue">-</span></div>
       <div>Avg/Step: <span id="avgStepValue">-</span></div>
     </div>
+    <button id="configToggleButton" type="button" title="Show the tuning panel">cfg</button>
     <div id="hud-buttons">
       <button id="viewToggleButton" type="button" title="Switch between 2D and 3D view">3D</button>
       <button id="helpButton" type="button" title="About this prototype">?</button>
@@ -46,6 +49,21 @@
       <p>Drag back, then release to cast - the bobber flies the opposite way, distance based on drag length.</p>
       <p>Land near a school for a bite. Closer to center means a faster bite; miss the school entirely and you get junk instead.</p>
       <p>Reel it in: hit the marker inside the blue zone to advance a round. The gold zone gives a bonus quality star if tagged in time - miss it and that round's star is gone for good. A miss elsewhere costs a life and slows the marker. Run out of time or lives and the fish escapes.</p>
+
+      <hr id="tutorialSeparator" />
+
+      <div id="tutorialCarousel">
+        <div id="tutorialHeading">How to play</div>
+        <div id="tutorialStage">
+          <img id="tutorialImg" alt="" />
+        </div>
+        <div id="tutorialCaption"></div>
+        <div id="tutorialControls">
+          <button id="tutorialPrev" type="button" aria-label="Previous tutorial step">◀</button>
+          <div id="tutorialDots"></div>
+          <button id="tutorialNext" type="button" aria-label="Next tutorial step">▶</button>
+        </div>
+      </div>
 
       <button id="infoGotItButton" type="button">Got it</button>
     </div>

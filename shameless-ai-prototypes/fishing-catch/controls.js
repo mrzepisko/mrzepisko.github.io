@@ -115,3 +115,30 @@ function initControls(config) {
     panel.appendChild(sectionEl);
   }
 }
+
+// The tuning panel is hidden by default on small/short screens (see the
+// mobile rules in styles.css) since it would otherwise cover most of the
+// canvas - "cfg" gets it back on demand there, and lets it be tucked away
+// on any screen size that wants the extra room. Closing is a separate,
+// unconditional button on the panel itself (like the help popup's own
+// close button), since it only ever needs to do one thing.
+function initConfigToggle() {
+  const panel = document.getElementById('controls');
+  const openButton = document.getElementById('configToggleButton');
+  const closeButton = document.getElementById('controlsCloseButton');
+  if (!panel) {
+    return;
+  }
+
+  if (openButton) {
+    openButton.addEventListener('click', () => {
+      const isHidden = getComputedStyle(panel).display === 'none';
+      panel.style.display = isHidden ? 'block' : 'none';
+    });
+  }
+  if (closeButton) {
+    closeButton.addEventListener('click', () => {
+      panel.style.display = 'none';
+    });
+  }
+}
