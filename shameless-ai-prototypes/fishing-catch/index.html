@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fishing: Common Catch Prototype</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+</head>
+<body>
+  <div id="controls"></div>
+
+  <div id="canvas-container"></div>
+
+  <div id="hud">
+    <div id="hud-readout">
+      <div>Mode: <span id="modeValue">aiming</span></div>
+      <div>Caught: <span id="catchValue">0</span></div>
+      <div>Junk: <span id="trashValue">0</span></div>
+      <div>Lost: <span id="escapedValue">0</span></div>
+      <div>Avg Catch: <span id="avgCatchValue">-</span></div>
+      <div>Avg/Step: <span id="avgStepValue">-</span></div>
+    </div>
+    <div id="hud-buttons">
+      <button id="viewToggleButton" type="button" title="Switch between 2D and 3D view">3D</button>
+      <button id="helpButton" type="button" title="About this prototype">?</button>
+      <button id="resetButton" type="button">Reset</button>
+    </div>
+    <table id="catchLogTable">
+      <thead>
+        <tr><th></th><th>I</th><th>II</th><th>III</th></tr>
+      </thead>
+      <tbody>
+        <tr><th class="tier-easy">EASY</th><td data-level="1"></td><td data-level="2"></td><td data-level="3"></td></tr>
+        <tr><th class="tier-medium">MEDIUM</th><td data-level="4"></td><td data-level="5"></td><td data-level="6"></td></tr>
+        <tr><th class="tier-hard">HARD</th><td data-level="7"></td><td data-level="8"></td><td data-level="9"></td></tr>
+        <tr><th class="tier-extreme">EXTREME</th><td data-level="10"></td><td data-level="11"></td><td data-level="12"></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div id="infoOverlay">
+    <div id="infoModal" role="dialog" aria-labelledby="infoTitle">
+      <button id="infoCloseButton" type="button" aria-label="Close">&times;</button>
+      <h2 id="infoTitle">Fishing: Common Catch Prototype</h2>
+      <p>Drag back, then release to cast - the bobber flies the opposite way, distance based on drag length.</p>
+      <p>Land near a school for a bite. Closer to center means a faster bite; miss the school entirely and you get junk instead.</p>
+      <p>Reel it in: hit the marker inside the blue zone to advance a round. The gold zone gives a bonus quality star if tagged in time - miss it and that round's star is gone for good. A miss elsewhere costs a life and slows the marker. Run out of time or lives and the fish escapes.</p>
+
+      <button id="infoGotItButton" type="button">Got it</button>
+    </div>
+  </div>
+
+  <script src="projection.js"></script>
+  <script src="iso3d.js"></script>
+  <script src="fishing.js"></script>
+  <script src="render.js"></script>
+  <script src="input.js"></script>
+  <script src="controls.js"></script>
+  <script src="popup.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

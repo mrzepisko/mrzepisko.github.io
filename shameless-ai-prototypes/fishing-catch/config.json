@@ -1,0 +1,136 @@
+{
+  "canvas": {
+    "width": 1440,
+    "height": 900,
+    "background": "#0a1f2b"
+  },
+  "simulation": {
+    "fixedTimestepSeconds": 0.01667,
+    "maxStepsPerFrame": 5
+  },
+  "boat": {
+    "radius": 30,
+    "hullColor": "#c9a876",
+    "hullOutline": "#7a5c36",
+    "cabinColor": "#8a6b46"
+  },
+  "cast": {
+    "minDragDistance": 24,
+    "maxDistance": 650,
+    "powerMultiplier": 3,
+    "flightSeconds": 0.45,
+    "landingScatterRadius": 18,
+    "landingMarkerFadeSeconds": 0.6,
+    "landingMarkerCrossColor": "#ff5f3a",
+    "bobberColor": "#f2f2f2",
+    "lineColor": "#d8dee8",
+    "rangeRingColor": "#2c3540"
+  },
+  "aimColors": {
+    "inside": "#3fbf5f",
+    "outside": "#ffd23f",
+    "open": "#ff5f5f"
+  },
+  "schools": {
+    "fishPerSchool": 6,
+    "fishSpeed": 22,
+    "fishTurnRate": 6,
+    "biteChaseSpeed": 90,
+    "biteChaseArrivalRadius": 10,
+    "splitAngleDegrees": 30,
+    "innerFillOpacity": 40,
+    "outerFillOpacity": 18,
+    "difficultyTiers": {
+      "easy": { "label": "EASY", "color": "#3fbf5f" },
+      "medium": { "label": "MEDIUM", "color": "#ffd23f" },
+      "hard": { "label": "HARD", "color": "#ff9f3a" },
+      "extreme": { "label": "EXTREME", "color": "#ff5f5f" }
+    },
+    "levelNames": ["I", "II", "III"],
+    "levelOverlapWeight": 0.3,
+    "points": [
+      { "x": 300, "y": 220, "innerRadius": 65, "outerRadius": 170, "wanderRadius": 55, "difficulty": "easy" },
+      { "x": 1140, "y": 240, "innerRadius": 58, "outerRadius": 155, "wanderRadius": 48, "difficulty": "medium" },
+      { "x": 260, "y": 690, "innerRadius": 50, "outerRadius": 140, "wanderRadius": 42, "difficulty": "hard" },
+      { "x": 1180, "y": 700, "innerRadius": 42, "outerRadius": 125, "wanderRadius": 36, "difficulty": "extreme" }
+    ]
+  },
+  "bite": {
+    "innerMinSeconds": 1,
+    "innerMaxSeconds": 2,
+    "outerMaxSeconds": 5,
+    "cueSeconds": 0.5
+  },
+  "qte": {
+    "rounds": [
+      { "zoneWidthFraction": 0.5, "barSpeed": 0.45 },
+      { "zoneWidthFraction": 0.4, "barSpeed": 0.6 },
+      { "zoneWidthFraction": 0.32, "barSpeed": 0.75 },
+      { "zoneWidthFraction": 0.25, "barSpeed": 0.9 },
+      { "zoneWidthFraction": 0.19, "barSpeed": 1.05 },
+      { "zoneWidthFraction": 0.14, "barSpeed": 1.2 }
+    ],
+    "roundsByLevel": [3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6],
+    "missSlowMultiplier": 0.4,
+    "missSlowSeconds": 0.6,
+    "flashSeconds": 0.5,
+    "qualityWidthRatio": 0.4,
+    "qualityZoneGap": 0.03,
+    "qualityColor": "#ffd23f",
+    "maxQualityStars": 3,
+    "starChar": "★",
+    "startingLives": 3,
+    "skullChar": "☠",
+    "reelSecondsPerStepEasy": 3,
+    "reelSecondsPerStepHard": 2,
+    "reelTimeWarningFraction": 0.2,
+    "caughtColor": "#ffffff",
+    "caughtDelaySeconds": 0.9,
+    "failDelaySeconds": 0.9,
+    "hitMarkColor": "#3fbf5f",
+    "missMarkColor": "#ff5f5f",
+    "pressMarkFadeSeconds": 1.2,
+    "pressMarkOpacity": 130,
+    "bar": { "x": 520, "y": 812, "width": 400, "height": 22 }
+  },
+  "trash": {
+    "items": ["Old Boot", "Waterlogged Branch", "Rusty Can", "Tangled Netting", "Soggy Newspaper"],
+    "color": "#8b93a1",
+    "cooldownMinSeconds": 0.5,
+    "cooldownMaxSeconds": 1.0
+  },
+  "result": {
+    "catchSeconds": 1.6,
+    "trashSeconds": 1.1,
+    "escapedSeconds": 1.4
+  },
+  "labels": {
+    "fontSize": 11,
+    "offset": 10,
+    "textColor": "#d8dee8",
+    "backgroundColor": [16, 20, 24, 190],
+    "borderColor": [255, 255, 255, 40]
+  },
+  "debug": {
+    "showSchoolRadii": true,
+    "showLabels": true,
+    "showAimPrediction": true,
+    "showHudReadout": true,
+    "isometric": false
+  },
+  "iso": {
+    "scale": 0.6,
+    "verticalRatio": 0.55,
+    "gridSpacing": 120,
+    "gridColor": [255, 255, 255, 18],
+    "axisStrokeWeight": 1.6,
+    "compassColor": "#d8dee8",
+    "boatAzimuthDegrees": 20,
+    "boatBakeSize": 220,
+    "boatBakeOrtho": 1.8,
+    "boatSpriteSize": 80,
+    "fishBakeSize": 140,
+    "fishBakeOrtho": 0.14,
+    "fishSpriteSize": 24
+  }
+}
