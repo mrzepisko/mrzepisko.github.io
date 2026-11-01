@@ -51,6 +51,7 @@
       "id": "prototypes",
       "title": "Other projects / prototypes",
       "entries": [
+        { "type": "project", "projectId": "bread" },
         { "type": "project", "projectId": "fishing" },
         { "type": "project", "projectId": "towing" },
         { "type": "project", "projectId": "asteroids" },
@@ -185,6 +186,18 @@
       "description": "Adventure game prototype, created as a part of assignment for Game Dev School",
       "screenshots": [ "spr5.jpg", "spr4.jpg", "spr1.jpg", "spr2.jpg", "spr3.jpg" ],
       "links": []
+    },
+    {
+      "id": "bread",
+      "title": "Bread timeline",
+      "year": 2026,
+      "role": "html+js",
+      "platform": "Web Prototype",
+      "description": "I needed this and used it twice already",
+      "screenshots": [ "bread1.png" ],
+      "links": [
+        { "label": "Open Prototype", "url": "shameless-ai-prototypes/bread/" }
+      ]
     },
     {
       "id": "fishing",

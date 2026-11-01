@@ -1,0 +1,1129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Dutch oven bread planner with adaptive timeline, fridge options and bake log.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cellipse cx='32' cy='38' rx='26' ry='18' fill='%23b8661a'/%3E%3Cpath d='M18 32q14-10 28 0' stroke='%23f6e6d4' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>Dutch Oven Bake Day</title>
+<script>{let t;try{t=localStorage.getItem("bread-theme")}catch(e){}document.documentElement.dataset.theme=t||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light")}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: setup screens (one question per screen), then one column - summary, status, overview strip, next action, step list, log */
+:root{
+  color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#eef0f2;--surface:#ffffff;--ink:#1d2430;--muted:#5d6675;--line:#d5d9df;
+  --accent:#b8661a;--accent-soft:#f6e6d4;--ok:#2f7a4f;--ok-soft:#dcefe3;--warn:#b3261e;--warn-soft:#f8dcd9;--free:#e3e7ee;--on-accent:#ffffff;
+  --scrim:rgba(20,26,36,.45);--cold:#cfe0f2;--cold-ink:#2b5d8a;--room:#f1dcc4;--cool:#d4eadb;--busy:#9aa3b0;
+  --f-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+:root[data-theme="dark"]{
+  --scrim:rgba(0,0,0,.6);--bg:#14181e;--surface:#1c222a;--ink:#e6e9ee;--muted:#9aa3b0;--line:#2e3540;
+  --accent:#e59a4f;--accent-soft:#3a2a1a;--ok:#6cc792;--ok-soft:#1b3326;--warn:#f08a80;--warn-soft:#3d1f1d;--free:#232a34;--on-accent:#1a1208;
+  --cold:#1f3a55;--cold-ink:#8ec0ec;--room:#4a3420;--cool:#1f3a2a;--busy:#5d6675;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.top>div{min-width:0}
+.topctl{display:flex;align-items:stretch;gap:8px;flex:0 0 auto}
+#theme button{display:inline-flex;align-items:center;justify-content:center;min-width:40px;padding:6px 8px}
+#theme svg{width:18px;height:18px;display:block}
+#lang button{min-width:44px;font-size:.8rem;padding:6px 8px}
+#main{display:grid;gap:14px}
+.wrap{max-width:640px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:14px}
+h1{font-family:var(--f-display);font-weight:800;font-size:1.8rem;line-height:1.05;margin:0;text-wrap:balance}
+h2{font-family:var(--f-display);font-weight:600;font-size:1.35rem;margin:0;text-wrap:balance}
+h3{font-family:var(--f-display);font-weight:600;font-size:1.1rem;margin:0}
+.sub{color:var(--muted);margin:4px 0 0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:12px}
+.lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.hint{font-size:.8rem;color:var(--muted);margin:0}
+.row{display:flex;gap:8px;align-items:center;min-width:0;flex-wrap:wrap}
+.spread{justify-content:space-between}
+.field{display:grid;gap:6px}
+.seg{display:flex;flex-wrap:wrap;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1 1 0;min-width:64px;border:0;background:var(--surface);color:var(--ink);font:500 .9rem var(--f-body);padding:9px 6px;cursor:pointer;line-height:1.2}
+.seg button small{display:block;font-size:.72rem;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.seg button[aria-pressed="true"] small{color:var(--surface);opacity:.75}
+/* Ink highlights invert with the theme and look identical in both, so the header toggles use the accent */
+#theme button[aria-pressed="true"],#lang button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.seg button:disabled{cursor:default}
+.seg button:disabled:not([aria-pressed="true"]){opacity:.45}
+input[type=time],input[type=number],select{font:500 1rem var(--f-mono);padding:7px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);min-width:0}
+select{font-family:var(--f-body);font-size:.9rem}
+input[type=number]{width:110px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+textarea{font:400 .95rem var(--f-body);padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%;min-height:70px;resize:vertical}
+.switch{display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;font-size:.9rem}
+.switch input{width:18px;height:18px;accent-color:var(--accent)}
+.btn{font:600 .9rem var(--f-body);border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:9px 12px;cursor:pointer;white-space:nowrap}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.outline{background:transparent;border-color:var(--accent);color:var(--accent)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted);padding:8px 6px}
+.btn:disabled{opacity:.5;cursor:default}
+.btn:focus-visible,.seg button:focus-visible,input:focus-visible,select:focus-visible,.choice:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.help{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--muted);font:600 .8rem var(--f-body);cursor:pointer;padding:0;line-height:1}
+.help[aria-expanded="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.pop{background:var(--accent-soft);border-radius:8px;padding:10px 12px;font-size:.88rem;display:grid;gap:6px}
+.pop ol{display:grid;gap:3px;padding-left:18px;list-style:decimal;margin:0}
+.stepper{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.stepper button{border:0;background:var(--surface);color:var(--ink);font:600 1.1rem var(--f-body);width:42px;height:40px;cursor:pointer}
+.stepper output{font:500 1.05rem var(--f-mono);min-width:72px;text-align:center}
+.val{font:500 1rem var(--f-mono);font-variant-numeric:tabular-nums}
+
+/* setup */
+.dots{display:flex;gap:6px}
+.dots i{width:28px;height:4px;border-radius:2px;background:var(--line)}
+.dots i.on{background:var(--accent)}
+.q{display:grid;gap:16px}
+.qnav{display:flex;justify-content:space-between;gap:8px}
+.busyrow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto;gap:6px;align-items:center;padding:8px;background:var(--bg);border-radius:8px}
+.busyrow select{grid-column:1/4}
+.busyrow .x{grid-row:1/3;grid-column:4}
+.busyrow input{width:100%}
+
+/* main */
+.summary{display:grid;gap:8px}
+.summary .facts{font-size:.9rem;color:var(--muted)}
+.summary .facts b{color:var(--ink);font-weight:500}
+.edits{display:flex;gap:6px;flex-wrap:wrap}
+.edits .btn{padding:6px 10px;font-size:.82rem}
+.recipe{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding-top:10px;border-top:1px solid var(--line)}
+.recipe div{display:grid;gap:2px}
+.recipe b{font-family:var(--f-mono);font-size:1.02rem;font-variant-numeric:tabular-nums}
+.recipe span{font-size:.74rem;color:var(--muted)}
+.status{border-radius:10px;padding:12px 14px;display:grid;gap:4px}
+.status.ok{background:var(--ok-soft)}
+.status.bad{background:var(--warn-soft)}
+.status strong{font-family:var(--f-display);font-size:1.05rem}
+.status.ok strong{color:var(--ok)}
+.status.bad strong{color:var(--warn)}
+.status p{margin:0;font-size:.9rem}
+.strip{overflow-x:auto}
+.strip svg{display:block;width:100%;min-width:340px;height:auto}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:.76rem;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:12px;height:10px;border-radius:2px;display:inline-block}
+.timer{display:grid;gap:10px}
+.phase{font-family:var(--f-display);font-weight:600;font-size:1.1rem}
+.clock{font:500 .9rem var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.count{font:500 2.5rem var(--f-mono);font-variant-numeric:tabular-nums;line-height:1}
+.count.over{color:var(--warn)}
+.count.open{color:var(--cold-ink)}
+.bar{height:8px;background:var(--free);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px}
+.action{display:grid;gap:6px;padding:12px;border-radius:8px;background:var(--accent-soft)}
+.action .what{font-weight:600}
+.action p{margin:0;font-size:.9rem}
+.choices{display:grid;gap:8px}
+.choice{display:grid;gap:3px;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:10px 12px;cursor:pointer;font:inherit}
+.choice b{font-weight:600}
+.choice span{font-size:.85rem;color:var(--muted)}
+.choice.rec{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.choice .tag{font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600;color:var(--accent)}
+ol{list-style:none;margin:0;padding:0;display:grid}
+#steps{position:relative}
+#steps::before{content:"";position:absolute;left:80px;top:16px;bottom:16px;width:2px;background:var(--line);z-index:1}
+li.step{display:grid;grid-template-columns:62px 18px minmax(0,1fr);gap:10px;padding:11px 0}
+.rail{position:relative;z-index:2}
+.rail i{display:block;width:12px;height:12px;margin:5px auto 0;border-radius:50%;border:2px solid var(--muted);background:var(--surface)}
+li.done .rail i{background:var(--muted)}
+li.next .rail i{width:16px;height:16px;margin-top:3px;border:3px solid var(--accent)}
+li.current .rail i,li.running .rail i{background:var(--accent);border-color:var(--accent)}
+li.future .t{color:var(--muted)}
+li.future .name{color:var(--muted)}
+li.future .rail i{border-color:var(--line)}
+.tedit{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px;background:var(--bg);border-radius:8px}
+.tedit input{min-width:118px}
+.t{font:500 1.02rem var(--f-mono);font-variant-numeric:tabular-nums;padding-top:1px}
+.t small{display:block;font-size:.68rem;color:var(--muted);font-family:var(--f-body)}
+.body{min-width:0;display:grid;gap:4px}
+.name{font-weight:600;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.desc{color:var(--muted);font-size:.87rem;margin:0}
+.chip{font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:99px;font-weight:600}
+.chip.cur{background:var(--ink);color:var(--surface)}
+.chip.nxt{background:var(--accent);color:var(--on-accent)}
+.chip.done{background:var(--ok-soft);color:var(--ok)}
+.chip.late{background:var(--warn-soft);color:var(--warn)}
+.chip.dec{background:var(--cold);color:var(--cold-ink)}
+.chip.opt{background:transparent;color:var(--ink);border:1px dashed var(--muted)}
+li.done .name,li.done .t{opacity:.55}
+li.done .desc{display:none}
+li.fold:not(.future){opacity:.85}
+li.next{margin:0 -10px;padding-left:10px;padding-right:10px;border-radius:8px;background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
+li.current{margin:0 -10px;padding-left:10px;padding-right:10px;border-radius:8px;background:var(--free)}
+li.current .name,li.current .t{opacity:1}
+.acts{display:flex;gap:8px;margin-top:2px;flex-wrap:wrap}
+.acts:empty{display:none}
+.acts .btn{padding:5px 9px;font-size:.8rem}
+li.fork{display:grid;gap:6px;padding:6px 0 12px 100px;position:relative;z-index:2;background:var(--surface)}
+li.overdue{margin:0 -10px;padding-left:10px;padding-right:10px;border-radius:8px;background:var(--warn-soft);box-shadow:inset 3px 0 0 var(--warn)}
+li.overdue .rail i{background:var(--warn);border-color:var(--warn)}
+li.overdue .desc{color:var(--ink)}
+.chip.over{background:var(--warn);color:var(--surface)}
+#action{display:grid;gap:8px}
+.action.overdue{background:var(--warn-soft)}
+.action.overdue .what{color:var(--warn)}
+.overitem{display:grid;gap:4px;padding-top:8px;border-top:1px solid var(--line)}
+.warnline{color:var(--warn);font-weight:600}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.forkopts{display:grid;gap:8px}
+.forkopts .choice{padding:8px 10px}
+.forkopts .choice:disabled{cursor:default;opacity:.6}
+.forkopts .choice[aria-pressed="true"]{background:var(--cold);border-color:var(--cold-ink)}
+.forkopts .choice[aria-pressed="true"] span{color:var(--ink)}
+li.gap{display:block;position:relative;z-index:2;padding:9px 12px 9px 100px;margin:4px 0;border-radius:8px;font-size:.85rem;text-align:left;background:var(--cold);color:var(--cold-ink);font-weight:600}
+@media (max-width:420px){li.fork{padding-left:0}}
+.modal{position:fixed;inset:0;z-index:30;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center;padding:16px max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.sheet{background:var(--surface);color:var(--ink);border-radius:12px;padding:16px;width:100%;max-width:520px;max-height:100%;overflow:auto;display:grid;gap:12px}
+@media (min-width:600px){.modal{align-items:center}}
+.log-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.logform{display:grid;gap:8px;padding:12px;background:var(--bg);border-radius:8px}
+.entry{display:grid;gap:3px;padding:12px 0;border-top:1px solid var(--line)}
+.entry:first-child{border-top:0}
+.e-top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.rate{display:inline-flex;gap:3px}
+.rate i{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.rate i.on{background:var(--accent)}
+.e-meta{font-size:.84rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.e-notes{margin:2px 0 0;font-size:.9rem;white-space:pre-wrap;overflow-wrap:anywhere}
+.empty{color:var(--muted);font-size:.9rem;margin:0}
+.foot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:.8rem;align-items:center}
+@media (max-width:420px){.recipe{grid-template-columns:repeat(2,minmax(0,1fr))}.count{font-size:2.1rem}}
+@media (prefers-reduced-motion:no-preference){.bar i{transition:width .9s linear}}
+</style>
+
+</head>
+<body>
+<div class="modal" id="flowModal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="fmTitle">
+    <h3 id="fmTitle" data-pl="Ciasto gotowe. Jak kontynuujesz?">Dough is ready. How do you continue?</h3>
+    <div class="forkopts" id="fmOpts"></div>
+    <div class="row spread"><button class="btn" id="fmCancel" data-pl="Anuluj">Cancel</button><button class="btn primary" id="fmGo" data-pl="Dalej">Continue</button></div>
+  </div>
+</div>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1 data-pl="Chleb z żeliwnego garnka">Dutch Oven Bake Day</h1>
+      <p class="sub" data-pl="Chleb wyrabiany ręcznie, pieczony w garnku. Plan, który dopasowuje się na bieżąco.">Hand-kneaded Dutch oven bread. A plan that adapts as you go.</p>
+    </div>
+    <div class="topctl">
+      <div class="seg" id="theme" role="group" aria-label="Theme" data-pl-aria="Motyw"><button data-v="light" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button><button data-v="dark" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button></div>
+      <div class="seg" id="lang" role="group" aria-label="Language"><button data-v="en" lang="en">EN</button><button data-v="pl" lang="pl">PL</button></div>
+    </div>
+  </header>
+
+  <section class="panel" id="setup" hidden>
+    <div class="row spread"><div class="dots" id="dots"></div><span class="hint" id="qnum"></span></div>
+
+    <div class="q" data-q="0">
+      <h2 data-pl="Jak ma przebiegać proces?">How do you want the process to flow?</h2>
+      <p class="hint" data-pl="Czasy są szacunkowe, liczone z obecnych ustawień i zajętych godzin.">Times are estimates with your current settings and busy times.</p>
+      <div class="forkopts" id="flowOpts"></div>
+    </div>
+
+    <div class="q" data-q="1" hidden>
+      <h2 data-pl="Co masz?">What do you have?</h2>
+      <div class="field"><label class="lbl" for="flour" data-pl="Mąka">Flour</label>
+        <div class="row"><input type="number" id="flour" min="250" max="3000" step="50" inputmode="numeric"><span class="hint" data-pl="gramów mąki">grams of flour</span></div>
+        <p class="hint" id="loafHint"></p></div>
+      <div class="field"><label class="lbl" for="protein" data-pl="Białko">Protein</label>
+        <div class="row"><input type="number" id="protein" min="7" max="16" step="0.5" inputmode="decimal"><span class="hint" data-pl="g na 100 g, z etykiety mąki">g per 100 g, from the flour label</span></div>
+        <p class="hint" id="proteinHint"></p></div>
+      <div class="field">
+        <div class="row"><span class="lbl" data-pl="Drożdże">Yeast</span><button class="help" id="helpBtn" aria-expanded="false" aria-controls="helpPop" aria-label="How to activate this yeast" data-pl-aria="Jak aktywować te drożdże">?</button></div>
+        <div class="seg" id="ytype"><button data-v="instant">Instant</button><button data-v="dry" data-pl="Suche aktywne">Active dry</button><button data-v="fresh" data-pl="Świeże">Fresh</button></div>
+        <div class="pop" id="helpPop" hidden></div>
+      </div>
+      <div class="field"><span class="lbl" data-pl="Temperatura w kuchni">Kitchen temperature</span>
+        <div class="row"><div class="stepper"><button id="tDown" aria-label="Colder" data-pl-aria="Chłodniej">-</button><output id="tempVal">22 °C</output><button id="tUp" aria-label="Warmer" data-pl-aria="Cieplej">+</button></div><span class="hint" data-pl="Podaj środek zakresu.">Use the middle of your range.</span></div></div>
+    </div>
+
+    <div class="q" data-q="2" hidden>
+      <h2 data-pl="Jaki ma wyjść?">How should it turn out?</h2>
+      <div class="field"><div class="row spread"><span class="lbl" data-pl="Ciasto">Dough</span><span class="val" id="hydVal">70%</span></div>
+        <div class="seg" id="hydPreset"><button data-v="65"><span data-pl="Łatwe">Easy</span><small>65%</small></button><button data-v="70"><span data-pl="Standard">Standard</span><small>70%</small></button><button data-v="75"><span data-pl="Dziurawy miękisz">Open crumb</span><small>75%</small></button></div>
+        <input type="range" id="hyd" min="60" max="80" step="1" aria-label="Hydration" data-pl-aria="Hydratacja">
+        <p class="hint" id="hydHint"></p>
+        <div class="row"><span class="hint" id="hydRec"></span><button class="btn ghost" id="hydUse" data-pl="Użyj">Use it</button></div></div>
+      <div class="field"><div class="row spread"><span class="lbl" data-pl="Sól">Salt</span><span class="val" id="saltVal">2.0%</span></div>
+        <div class="seg" id="saltPreset"><button data-v="2"><span data-pl="Standard">Standard</span><small>2%</small></button><button data-v="1.2"><span data-pl="Dla malucha">Toddler</span><small>1.2%</small></button></div>
+        <input type="range" id="salt" min="0.8" max="2.4" step="0.1" aria-label="Salt" data-pl-aria="Sól">
+        <p class="hint" id="saltHint"></p></div>
+      <div class="field"><span class="lbl" data-pl="Tempo wyrastania">Rise speed</span>
+        <div class="seg" id="speed"></div>
+        <p class="hint" data-pl="Auto wybiera najwolniejsze wyrastanie, które mieści się w planie. Wolniej znaczy smaczniej.">Auto picks the slowest rise that fits your plan. Slower tastes better.</p></div>
+    </div>
+
+    <div class="q" data-q="3" hidden>
+      <h2 data-pl="Kiedy chcesz mieć chleb?">When do you want the bread?</h2>
+      <p class="hint" data-pl="Opcjonalne. Bez celu zaczynasz teraz i decydujesz na bieżąco.">Optional. Without a target you start now and decide at each step.</p>
+      <div class="seg" id="tgtMode"><button data-v="none" data-pl="Na bieżąco">Decide as I go</button><button data-v="by" data-pl="Gotowy na">Ready by</button></div>
+      <div class="field" id="tgtBox">
+        <div class="seg" id="tgtDay"><button data-v="0" data-pl="Dziś">Today</button><button data-v="1" data-pl="Jutro">Tomorrow</button><button data-v="2" id="tgtDay2">Day after</button></div>
+        <div class="row"><input type="time" id="tgtTime" aria-label="Ready to eat by" data-pl-aria="Gotowy do jedzenia na"><span class="hint" data-pl="gotowy do jedzenia (wystudzony)">ready to eat (cooled)</span></div>
+      </div>
+    </div>
+
+    <div class="q" data-q="4" hidden>
+      <h2 data-pl="Kiedy jesteś zajęty?">When are you busy?</h2>
+      <p class="hint" data-pl="Godziny, w których nie możesz zajmować się ciastem. Plan je omija, wykorzystując wyrastanie i lodówkę.">Times you cannot touch the dough. The plan keeps every task out of them, using rises and the fridge.</p>
+      <div class="field" id="busyList"></div>
+      <div class="row"><button class="btn" id="addBusy" data-pl="Dodaj zajęty czas">Add busy time</button><button class="btn ghost" id="addSleep" data-pl="Dodaj sen 23:00-07:00">Add sleep 23:00-07:00</button></div>
+    </div>
+
+    <div class="qnav"><button class="btn" id="qBack">Back</button><div class="row"><button class="btn" id="qCont" hidden>Continue</button><button class="btn primary" id="qNext">Next</button></div></div>
+  </section>
+
+  <div id="main" hidden>
+    <section class="panel summary">
+      <div class="facts" id="facts"></div>
+      <div class="edits"><button class="btn" data-edit="0" data-pl="Przebieg">Flow</button><button class="btn" data-edit="1" data-pl="Składniki">Ingredients</button><button class="btn" data-edit="2" data-pl="Ciasto">Dough</button><button class="btn" data-edit="3" data-pl="Cel">Target</button><button class="btn" data-edit="4" data-pl="Zajęte godziny">Busy times</button></div>
+      <div class="recipe">
+        <div><b id="flourAmt"></b><span id="flourName"></span></div>
+        <div><b id="waterAmt"></b><span data-pl="woda ~26 °C (20-30 °C ok)">water ~26 °C (20-30 °C ok)</span></div>
+        <div><b id="saltAmt"></b><span data-pl="sól">salt</span></div>
+        <div><b id="yeastAmt"></b><span id="yeastName"></span></div>
+      </div>
+    </section>
+
+    <section class="status" id="status"></section>
+
+    <section class="panel">
+      <div class="row spread"><h3 data-pl="Przegląd">Overview</h3><span class="hint" id="span"></span></div>
+      <div class="strip" id="strip"></div>
+      <div class="legend"><span><i style="background:var(--room)"></i><span data-pl="Wyrastanie">Rising</span></span><span><i style="background:var(--cold)"></i><span data-pl="Lodówka">Fridge</span></span><span><i style="background:var(--accent)"></i><span data-pl="Piekarnik">Oven</span></span><span><i style="background:var(--cool)"></i><span data-pl="Studzenie">Cooling</span></span><span><i style="background:var(--busy);opacity:.5"></i><span data-pl="Zajęty">Busy</span></span><span data-pl="◆ Decyzja">◆ Decision</span></div>
+    </section>
+
+    <section class="panel timer">
+      <div class="row spread"><div><div class="lbl" data-pl="Teraz">Now</div><div class="phase" id="phase"></div></div><div class="clock" id="clock"></div></div>
+      <div><div class="lbl" id="countLbl"></div><div class="count" id="count" role="timer">--:--</div></div>
+      <div class="bar"><i id="bar"></i></div>
+      <div class="sr" id="liveMsg" aria-live="polite"></div>
+      <div id="action"></div>
+    </section>
+
+    <section class="panel"><h3 data-pl="Kroki">Steps</h3><ol id="steps"></ol></section>
+
+    <section class="panel">
+      <div class="log-head"><h3 data-pl="Dziennik wypieków">Bake log</h3><span class="hint" data-pl="Zapisane tylko w tej przeglądarce">Saved in this browser only</span></div>
+      <div class="logform">
+        <div class="lbl" data-pl="Oceń ten wypiek">Rate this bake</div>
+        <div class="seg" id="rating"><button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button><button data-v="4">4</button><button data-v="5">5</button></div>
+        <label class="lbl" for="notes" data-pl="Notatki">Notes</label>
+        <textarea id="notes" placeholder="Crumb, crust, rise, what you would change next time" data-pl-ph="Miękisz, skórka, wyrastanie, co zmienić następnym razem"></textarea>
+        <div class="row spread"><span class="hint" id="logMsg"></span><button class="btn primary" id="saveLog" data-pl="Zapisz wypiek">Save this bake</button></div>
+      </div>
+      <label class="switch"><input type="checkbox" id="tune"> <span data-pl="Dopasuj czasy wyrastania do mojego dziennika">Adjust rise times from my log</span></label>
+      <p class="hint" id="tuneInfo"></p>
+      <ol id="logList"></ol>
+    </section>
+
+    <div class="foot">
+      <span data-pl="Czasy wyrastania są szacunkowe. Decyduje ciasto, nie zegar.">Rise times are estimates. The dough decides, not the clock.</span>
+      <span id="resetBox"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- language: Polish when the browser prefers it, English otherwise; a manual choice wins ---------- */
+const LANG_KEY="bread-lang";
+function detectLang(){
+  try{const s=localStorage.getItem(LANG_KEY);if(s==="en"||s==="pl")return s}catch(e){}
+  const ls=navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||"en"];
+  for(const l of ls){if(/^pl\b/i.test(l))return"pl";if(/^en\b/i.test(l))return"en"}
+  return"en";
+}
+let LANG=detectLang();
+const L=(en,pl)=>LANG==="pl"?pl:en;
+const LOC=()=>LANG==="pl"?"pl-PL":"en-GB";
+// Polish plural: 1 / 2-4 (not 12-14) / everything else
+const pf=(n,one,few,many)=>n===1?one:(n%10>=2&&n%10<=4&&(n%100<12||n%100>14))?few:many;
+function applyStatic(){
+  document.documentElement.lang=LANG;
+  document.querySelectorAll("[data-pl]").forEach(el=>{if(el.dataset.en==null)el.dataset.en=el.textContent;el.textContent=LANG==="pl"?el.dataset.pl:el.dataset.en});
+  document.querySelectorAll("[data-pl-aria]").forEach(el=>{if(el.dataset.enAria==null)el.dataset.enAria=el.getAttribute("aria-label");el.setAttribute("aria-label",LANG==="pl"?el.dataset.plAria:el.dataset.enAria)});
+  document.querySelectorAll("[data-pl-ph]").forEach(el=>{if(el.dataset.enPh==null)el.dataset.enPh=el.placeholder;el.placeholder=LANG==="pl"?el.dataset.plPh:el.dataset.enPh});
+  document.querySelectorAll("#lang button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===LANG)));
+  renderTheme();
+}
+/* ---------- theme: follows the system until the toggle is used; a manual choice wins ---------- */
+const THEME_KEY="bread-theme",darkQ=matchMedia("(prefers-color-scheme:dark)");
+function renderTheme(){
+  const cur=document.documentElement.dataset.theme;
+  document.querySelectorAll("#theme button").forEach(b=>{
+    const light=b.dataset.v==="light",l=light?L("Light mode","Tryb jasny"):L("Dark mode","Tryb ciemny");
+    b.setAttribute("aria-label",l);b.title=l;b.setAttribute("aria-pressed",String(b.dataset.v===cur));
+  });
+}
+document.getElementById("theme").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  document.documentElement.dataset.theme=b.dataset.v;
+  try{localStorage.setItem(THEME_KEY,b.dataset.v)}catch(err){}
+  renderTheme();
+});
+darkQ.addEventListener("change",e=>{
+  let saved;try{saved=localStorage.getItem(THEME_KEY)}catch(err){}
+  if(!saved){document.documentElement.dataset.theme=e.matches?"dark":"light";renderTheme()}
+});
+
+/* ---------- Planner engine: absolute timestamps, phase ranges, two fridge decision points ---------- */
+const MIN=60000, H=60*MIN;
+const BULK={2:225,3:180,4:150,7:95}, ROOM_PROOF={2:75,3:65,4:55,7:45};
+const SPEEDS=[2,3,4,7];
+const speedName=g=>({2:L("Slow","Wolno"),3:L("Medium","Średnio"),4:L("Fast","Szybko"),7:L("Express","Ekspres")})[g];
+const YEAST_PEN={2:0,3:20,4:40,7:110};
+const FR_BULK=[8*60,24*60], FR_SHAPED=[2*60,16*60], FR_IDEAL={bulk:12*60,shaped:10*60};
+const MAX_LOAF_FLOUR=650;
+const YT={instant:{k:1},dry:{k:1.33},fresh:{k:3}};
+const ytt=type=>({
+  instant:{name:L("instant yeast","drożdże instant"),how:L("No activation needed.","Nie wymagają aktywacji."),
+    steps:[L("Stir it straight into the mixing water (or the flour).","Wsyp prosto do wody (albo do mąki)."),L("Mix as normal.","Mieszaj normalnie.")]},
+  dry:{name:L("active dry yeast","drożdże suche aktywne"),how:L("Needs 10 min of activation before mixing.","Wymagają 10 min aktywacji przed mieszaniem."),
+    steps:[L("Take 50 g of the recipe water at about 35 °C (30-40 °C ok), add a pinch of sugar (optional, makes the foam show faster).","Weź 50 g wody z przepisu o temperaturze około 35 °C (30-40 °C ok), dodaj szczyptę cukru (opcjonalnie, piana pojawi się szybciej)."),
+      L("Stir in the yeast, wait 10 min until foamy.","Wmieszaj drożdże, odczekaj 10 min, aż się spienią."),
+      L("No foam means dead yeast - stop here.","Brak piany oznacza martwe drożdże - przerwij."),
+      L("Add the rest of the water at about 24 °C (20-28 °C ok).","Dodaj resztę wody o temperaturze około 24 °C (20-28 °C ok).")]},
+  fresh:{name:L("fresh yeast","drożdże świeże"),how:L("Dissolve it, no waiting and no sugar needed.","Rozpuść je, bez czekania i bez cukru."),
+    steps:[L("Check it first: creamy beige, crumbly, mild smell. Mold or dark patches - discard.","Najpierw sprawdź: kremowo-beżowe, kruche, łagodny zapach. Pleśń lub ciemne plamy - wyrzuć."),
+      L("Crumble it into the mixing water and stir until fully dissolved.","Rozkrusz do wody i mieszaj, aż całkiem się rozpuszczą."),
+      L("Keep it away from direct contact with salt.","Nie dopuść do bezpośredniego kontaktu z solą.")]}
+})[type];
+const NOW=()=>Date.now();
+
+const C=()=>S.cfg, R=()=>S.run;
+const r1=v=>Math.round(v*10)/10;
+const yG=lvl=>r1(lvl*YT[C().ytype].k*C().flour/500);
+const water=()=>Math.round(C().flour*C().hyd/100);
+const saltG=()=>r1(C().flour*C().salt/100);
+const loaves=()=>Math.max(1,Math.ceil(C().flour/MAX_LOAF_FLOUR));
+const doughW=()=>C().flour+water()+saltG();
+const tf=()=>Math.min(1.6,Math.max(.5,1-0.08*(C().temp-22)));
+let LOG=[];
+const timedBakes=()=>LOG.filter(e=>e.bulkAct>0);
+function tuneFactor(){
+  if(!C().tune)return 1;
+  const xs=timedBakes().map(e=>e.bulkAct/e.bulkBase);
+  return xs.length?Math.min(1.6,Math.max(.6,xs.reduce((a,b)=>a+b,0)/xs.length)):1;
+}
+const bulkIdeal=y=>BULK[y]*tf()*tuneFactor();
+const proofIdeal=y=>ROOM_PROOF[y]*tf()*tuneFactor();
+const r5=t=>Math.round(t/(5*MIN))*5*MIN;
+const started=()=>Object.keys(R().done).length>0||Object.keys(R().st).length>0;
+// Steps with real hands-on work get Start + Done; minutes of work each
+const WORK={mix:5,knead:10,f1:2,f2:2,f3:2,preshape:3,bulkOut:5,shape:10};
+const dayStart=t=>{const d=new Date(t);d.setHours(0,0,0,0);return d.getTime()};
+
+function busyIntervals(){
+  const out=[],today=dayStart(NOW());
+  for(const b of C().busy){
+    if(b.from==null||b.to==null)continue;
+    const days=b.day==null?[-1,0,1,2,3].map(k=>today+k*24*H):[b.day];
+    for(const d0 of days){
+      // dayStart of a later date is safe across DST; adding 24h is close enough for this purpose
+      const a=d0+b.from*MIN;let z=d0+b.to*MIN;if(z<=a)z+=24*H;out.push([a,z]);
+    }
+  }
+  return out;
+}
+let BUSY=[];
+// True when any part of a task, from its start through its work time, falls in a busy time
+const hitsBusy=(t,id)=>BUSY.some(([a,z])=>t<z-30000&&t+(WORK[id]||0)*MIN>a+30000);
+
+// Build one projected plan for a set of choices. Completed and started steps keep their times.
+function plan(o){
+  const dn=R().done,nowT=NOW(),y=o.yeast,dry=C().ytype==="dry",n=loaves(),live=started();
+  const bI=bulkIdeal(y),pI=proofIdeal(y);
+  const ev=[],T={};let prev=null;
+  const c5=v=>Math.ceil(v/(5*MIN))*5*MIN;
+  const put=(id,name,gap,ref,x={})=>{
+    const base=ref===undefined?prev:ref;let t,due;
+    const W=(WORK[id]||0)*MIN,st=R().st[id];
+    // A step's time is when it begins; its successors count from there, work time included
+    if(dn[id]!=null)t=R().as[id]?dn[id]:st!=null?Math.max(st,dn[id]-W):dn[id]-W;
+    else if(st!=null)t=st;
+    // Once a bake runs, a missed step keeps its due time (see advance). Only the start and gates wait for the user.
+    else{due=c5(base==null?o.start:T[base]+gap*MIN);t=due;if(t<nowT&&!x.fold&&!x.end&&(!live||x.gate))t=c5(nowT)}
+    T[id]=t;const e={id,name,t,due:due??t,i:ev.length,...x};ev.push(e);if(!x.side)prev=id;return e;
+  };
+  if(dry)put("act",L("Activate yeast","Aktywuj drożdże"),0,null,{hands:1,k:"room",phase:L("Yeast activating","Drożdże się aktywują")});
+  put("mix",L("Mix","Wymieszaj"),dry?10:0,dry?"act":null,{hands:1,k:"room",phase:L("Resting after mixing","Odpoczynek po wymieszaniu")});
+  put("knead",L("Salt and knead","Sól i wyrabianie"),20,"mix",{hands:1,k:"room",phase:L("Bulk rise","Pierwsze wyrastanie")});
+  const fg=bI>=200?30:20;
+  const bulkT=10+bI*o.sb;
+  for(let k=1;k<=3;k++){
+    const gap=10+k*fg;
+    if(gap<bulkT-15)put("f"+k,L("Fold ","Składanie ")+k,gap,"knead",{side:1,fold:1});
+  }
+  const bulk=put("bulk",L("Dough risen","Ciasto wyrosło"),bulkT,"knead",{hands:1,k:"room",gate:1,decision:"d1",min:r5(T.knead+(10+bI*.75)*MIN),max:r5(T.knead+(10+bI*1.35)*MIN)});
+  let bench=15,proofF=1;
+  if(o.d1.t==="fridge"){
+    bulk.phase=L("Bulk in the fridge","Ciasto w lodówce");bulk.k="cold";
+    put("bulkOut",L("Take out, preshape","Wyjmij, wstępnie uformuj"),o.d1.dur,"bulk",{hands:1,k:"room",phase:L("Bench rest (cold dough)","Odpoczynek na blacie (zimne ciasto)"),flex:1,gate:1,min:r5(T.bulk+FR_BULK[0]*MIN),max:r5(T.bulk+FR_BULK[1]*MIN)});
+    bench=30;proofF=1.4;
+  }else{
+    bench=20;bulk.phase=L("Ready to preshape","Gotowe do wstępnego formowania");
+    put("preshape",L("Preshape","Wstępne formowanie"),1,undefined,{hands:1,k:"room",phase:L("Bench rest","Odpoczynek na blacie")});
+  }
+  const sh=put("shape",L("Shape","Formowanie"),bench,undefined,{hands:1,k:"room"});
+  const cold=o.d2.t==="fridge",lidOn=cold?25:20;
+  if(cold){
+    sh.phase=L("Counter proof","Garowanie na blacie");
+    put("sfr",L("Into the fridge","Do lodówki"),15,undefined,{hands:1,k:"cold",phase:L("Cold proof in the fridge","Garowanie w lodówce")});
+    put("preheat",L("Preheat oven","Nagrzej piekarnik"),o.d2.dur-45,"sfr",{hands:1,k:"cold",phase:L("Preheating, loaf still in the fridge","Nagrzewanie, bochenek wciąż w lodówce"),flex:1,gate:1,min:r5(T.sfr+(FR_SHAPED[0]-45)*MIN),max:r5(T.sfr+(FR_SHAPED[1]-45)*MIN)});
+  }else{
+    const pr=pI*o.sp*proofF;sh.phase=L("Final proof","Garowanie końcowe");
+    put("preheat",L("Preheat oven","Nagrzej piekarnik"),Math.max(0,pr-45),undefined,{hands:1,k:"room",phase:L("Final proof, oven preheating","Garowanie, piekarnik się nagrzewa")});
+  }
+  put("load",cold?(n>1?L("Loaf 1 in, from the fridge","Bochenek 1 z lodówki do garnka"):L("Load from the fridge","Z lodówki do garnka")):(n>1?L("Poke test, loaf 1 in","Test palca, bochenek 1 do garnka"):L("Poke test, load","Test palca, do garnka")),45,undefined,{hands:1,k:"oven",phase:L("Baking, lid on","Pieczenie pod pokrywką")});
+  put("lidoff",L("Lid off","Zdejmij pokrywkę"),lidOn,undefined,{hands:1,k:"oven",phase:L("Baking, lid off","Pieczenie bez pokrywki")});
+  put("out",n>1?L("Loaf 1 out","Bochenek 1 na kratkę"):L("Out of the oven","Wyjmij z piekarnika"),25,undefined,{hands:1,k:"cool",phase:n>1?L("Cooling, pot reheating","Studzenie, garnek się nagrzewa"):L("Cooling","Studzenie")});
+  for(let k=2;k<=n;k++){
+    const last=k===n;
+    put(`l${k}in`,L(`Loaf ${k} in`,`Bochenek ${k} do garnka`),10,undefined,{hands:1,k:"oven",phase:L("Baking, lid on","Pieczenie pod pokrywką")});
+    put(`l${k}off`,L(`Loaf ${k} lid off`,`Bochenek ${k}: zdejmij pokrywkę`),lidOn,undefined,{hands:1,k:"oven",phase:L("Baking, lid off","Pieczenie bez pokrywki")});
+    put(`l${k}out`,L(`Loaf ${k} out`,`Bochenek ${k} na kratkę`),25,undefined,{hands:1,k:"cool",phase:last?L("Cooling","Studzenie"):L("Cooling, pot reheating","Studzenie, garnek się nagrzewa")});
+  }
+  put("cut",n>1?L("Loaf 1 ready to eat","Bochenek 1 gotowy do jedzenia"):L("Ready to eat","Gotowy do jedzenia"),60,"out",{side:1,end:1});
+  ev.sort((a,b)=>a.t-b.t||a.i-b.i);
+  const clash=ev.filter(e=>e.hands&&dn[e.id]==null&&R().st[e.id]==null&&hitsBusy(e.t,e.id));
+  return{ev,T,o,clash,ready:T.cut,cold};
+}
+
+function score(p){
+  const cfg=C(),o=p.o;let sc=p.clash.length*1000;
+  if(cfg.target){const d=(p.ready-cfg.target)/MIN;sc+=d>0?d*5:-d*.3}
+  // Without a target, starting now is the default: a later start must buy something real
+  else sc+=(p.ready-NOW())/MIN*.1+(started()?0:(p.T[C().ytype==="dry"?"act":"mix"]-NOW())/MIN*.25);
+  if(!started()&&cfg.speed==="auto")sc+=YEAST_PEN[o.yeast];
+  if(o.d1.t==="fridge"&&!R().d1)sc+=40+Math.abs(o.d1.dur-FR_IDEAL.bulk)*.02;
+  if(o.d2.t==="fridge"&&!R().d2)sc+=25+Math.abs(o.d2.dur-FR_IDEAL.shaped)*.02;
+  sc+=Math.abs(o.sb-1)*100+Math.abs(o.sp-1)*100;
+  return sc;
+}
+
+function grid(a,b,step){const r=[];for(let x=a;x<=b;x+=step)r.push(x);return r}
+
+// Search choices that are still open. force = {d1:"shape"|"fridge", d2:...} restricts one decision.
+function best(force={}){
+  const r=R(),dn=r.done,cfg=C(),nowT=NOW(),st=started();
+  const needStartSearch=!st&&(cfg.target||cfg.busy.length);
+  const maxStart=cfg.target?Math.min(72*60,Math.max(16*60,(cfg.target-nowT)/MIN)):16*60;
+  const starts=st?[nowT]:needStartSearch?grid(0,maxStart,60).map(m=>nowT+m*MIN):[nowT];
+  const yeasts=st?[r.yeast]:cfg.speed==="auto"?[2,3,4,7]:[+cfg.speed];
+  const opts=(key,fr,step)=>{
+    const chosen=r[key],f=force[key];
+    if(chosen==="shape"||chosen==="proof")return[{t:chosen}];
+    const fridge=grid(fr[0],fr[1],step).map(d=>({t:"fridge",dur:d}));
+    if(chosen==="fridge")return fridge;
+    if(f==="fridge")return fridge;
+    const plain={t:key==="d1"?"shape":"proof"};
+    return f?[plain]:[plain,...fridge];
+  };
+  const d1s=opts("d1",FR_BULK,120),d2s=opts("d2",FR_SHAPED,60);
+  let top=null;
+  const tryO=o=>{const p=plan(o),s=score(p);if(!top||s<top.s)top={p,s};};
+  for(const start of starts)for(const yeast of yeasts)for(const d1 of d1s)for(const d2 of d2s){if(d1.t==="fridge"&&d2.t==="fridge"&&R().d2!=="fridge")continue;tryO({start,yeast,sb:1,sp:1,d1,d2})}
+  // Local refinement around the winner: finer start/fridge steps, then rise stretch within range
+  const b=top.p.o;
+  const near=(v,span,step,lo,hi)=>grid(-span,span,step).map(d=>v+d).filter(x=>x>=lo&&x<=hi);
+  const st2=st?[b.start]:near(b.start,30*MIN,15*MIN,nowT,Infinity);
+  const n1=b.d1.t==="fridge"&&r.d1!=="shape"?near(b.d1.dur,60,30,FR_BULK[0],FR_BULK[1]).map(d=>({t:"fridge",dur:d})):[b.d1];
+  const n2=b.d2.t==="fridge"&&r.d2!=="proof"?near(b.d2.dur,45,15,FR_SHAPED[0],FR_SHAPED[1]).map(d=>({t:"fridge",dur:d})):[b.d2];
+  const sbs=dn.bulk!=null?[1]:[.85,1,1.15],sps=dn.load!=null?[1]:[.85,1,1.15];
+  for(const start of st2)for(const d1 of n1)for(const d2 of n2)if(!(d1.t==="fridge"&&d2.t==="fridge"&&R().d2!=="fridge"))for(const sb of sbs)for(const sp of sps)tryO({start,yeast:b.yeast,sb,sp,d1,d2});
+  return top.p;
+}
+
+
+const KEY="bread-planner-v3",LOG_KEY="bread-bake-log-v1";
+const defCfg={flow:"later",protein:12,flour:500,ytype:"instant",temp:22,hyd:70,salt:2,speed:"auto",target:null,busy:[],tune:false};
+let S=load();
+function fresh(){return{cfg:{...defCfg},setup:{done:false,step:0},run:{done:{},st:{},as:{},auto:{},d1:null,d2:null,yeast:null,skip:{},logId:null},ui:{pv:{route:null}},draft:{rating:0,notes:""}}}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s)return s}catch(e){}return fresh()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,"0");
+const fmt=t=>{const d=new Date(t);return pad(d.getHours())+":"+pad(d.getMinutes())};
+const fmtM=m=>pad(Math.floor(m/60))+":"+pad(m%60);
+const parseM=v=>{const[h,m]=v.split(":").map(Number);return h*60+m};
+const wd=(t,form="short")=>new Date(t).toLocaleDateString(LOC(),{weekday:form}).replace(/\.$/,"");
+function dayLbl(t){const k=Math.round((dayStart(t)-dayStart(NOW()))/(24*H));return k===0?"":k===1?L("tomorrow","jutro"):k===-1?L("yesterday","wczoraj"):wd(t)}
+const when=t=>{const d=dayLbl(t);return fmt(t)+(d?" "+d:"")};
+const dur=ms=>{const m=Math.round(Math.abs(ms)/MIN),h=Math.floor(m/60),r=m%60;return h?`${h} h${r?` ${r} min`:""}`:`${r} min`};
+const clock=ms=>{const s=Math.max(0,Math.round(ms/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h?`${h}:${pad(m)}:${pad(x)}`:`${pad(m)}:${pad(x)}`};
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num=(v,d)=>{const s=d==null?String(v):Number(v).toFixed(d);return LANG==="pl"?s.replace(".",","):s};
+const lc=s=>LANG==="pl"?s.charAt(0).toLowerCase()+s.slice(1):s.toLowerCase();
+const nTasks=n=>L(`${n} task${n>1?"s":""}`,`${n} ${pf(n,"zadanie","zadania","zadań")}`);
+
+/* ---------- step descriptions ---------- */
+function desc(e,p){
+  const c=C(),y=p.o.yeast,ya=num(yG(y))+" g",n=loaves(),w=water(),f=c.flour,pc=Math.round(doughW()/n);
+  const divide=n>1?L(`Divide into ${n} pieces of about ${pc} g. `,`Podziel na ${n} części po około ${pc} g. `):"";
+  switch(e.id){
+    case"act":return L(`Stir ${ya} active dry yeast into 50 g water at about 35 °C (30-40 °C ok). Wait 10 min for foam.`,`Wmieszaj ${ya} drożdży suchych do 50 g wody o temperaturze około 35 °C (30-40 °C ok). Odczekaj 10 min na pianę.`);
+    case"mix":return c.ytype==="instant"?L(`Stir ${ya} instant yeast into ${w} g water at about 26 °C (20-30 °C ok), add ${f} g flour, mix until no dry bits. Cover.`,`Wmieszaj ${ya} drożdży instant do ${w} g wody o temperaturze około 26 °C (20-30 °C ok), dodaj ${f} g mąki, mieszaj, aż nie będzie suchych grudek. Przykryj.`)
+      :c.ytype==="dry"?L(`Foamy? Add the rest of the water (${w-50} g at about 24 °C), then ${f} g flour. Mix until no dry bits. Cover.`,`Jest piana? Dodaj resztę wody (${w-50} g, około 24 °C), potem ${f} g mąki. Mieszaj, aż nie będzie suchych grudek. Przykryj.`)
+      :L(`Crumble ${ya} fresh yeast into ${w} g water at about 26 °C (20-30 °C ok), dissolve, add ${f} g flour, mix until no dry bits. Cover.`,`Rozkrusz ${ya} świeżych drożdży do ${w} g wody o temperaturze około 26 °C (20-30 °C ok), rozpuść, dodaj ${f} g mąki, mieszaj, aż nie będzie suchych grudek. Przykryj.`);
+    case"knead":return L(`Add ${num(saltG())} g salt with wet hands. Knead 8-10 min until smooth and elastic. Mark the dough level on the container. Cover.${f>1000?" Knead in two halves if unwieldy.":""}`,`Dodaj ${num(saltG())} g soli mokrymi rękami. Wyrabiaj 8-10 min, aż ciasto będzie gładkie i elastyczne. Zaznacz poziom ciasta na pojemniku. Przykryj.${f>1000?" Przy dużej ilości wyrabiaj w dwóch częściach.":""}`);
+    case"f1":case"f2":case"f3":return L("Optional. Stretch one side up and fold it over, quarter turn, repeat 4 times.","Opcjonalne. Rozciągnij jeden bok do góry i złóż na ciasto, obróć o ćwierć, powtórz 4 razy.");
+    case"bulk":return L(`About doubled from your mark, domed, bubbly, jiggly. Expected between ${fmt(e.min)} and ${fmt(e.max)}. Then pick one of three ways to go on.`,`Mniej więcej podwojone względem znacznika, wypukłe, z bąblami, drży przy poruszeniu. Spodziewane między ${fmt(e.min)} a ${fmt(e.max)}. Potem wybierz jedną z trzech dróg.`);
+    case"bulkOut":return L(`Take the dough out any time between ${when(e.min)} and ${when(e.max)}. ${divide}Preshape cold, rest 30 min.`,`Wyjmij ciasto w dowolnym momencie między ${when(e.min)} a ${when(e.max)}. ${divide}Wstępnie uformuj na zimno, odpoczynek 30 min.`);
+    case"preshape":return n>1?L(`Divide into ${n} pieces of about ${pc} g, preshape, then rest 15 min.`,`Podziel na ${n} części po około ${pc} g, wstępnie uformuj, potem odpoczynek 15 min.`):L("Preshape a loose round, then rest 15 min.","Wstępnie uformuj luźną kulę, potem odpoczynek 15 min.");
+    case"shape":return L(`Shape tight boule${n>1?"s":""}, seam up in floured towel-lined bowl${n>1?"s":""}.`,`Uformuj ${n>1?"ciasne bochenki":"ciasny bochenek"}, złączeniem do góry, do ${n>1?"misek":"miski"} wyłożonej oprószoną ściereczką.`);
+    case"sfr":return L(`Cover tightly and refrigerate. Bake any time between ${when(p.T.sfr+FR_SHAPED[0]*MIN)} and ${when(p.T.sfr+FR_SHAPED[1]*MIN)}.`,`Szczelnie przykryj i wstaw do lodówki. Piecz w dowolnym momencie między ${when(p.T.sfr+FR_SHAPED[0]*MIN)} a ${when(p.T.sfr+FR_SHAPED[1]*MIN)}.`);
+    case"preheat":return L(`Pot and lid in the oven, 250 °C for 45 min.${p.cold?" Dough stays in the fridge.":""}`,`Garnek z pokrywką do piekarnika, 250 °C przez 45 min.${p.cold?" Ciasto zostaje w lodówce.":""}`);
+    case"load":return p.cold?L("Straight from the fridge: flip onto parchment, score 1 cm deep, into the pot. Lid on 25 min at 250 °C.","Prosto z lodówki: przełóż na papier, natnij na 1 cm, do garnka. 25 min pod pokrywką w 250 °C.")
+      :L(`Dent springs back slowly: flip onto parchment, score, into the pot. Lid on 20 min at 250 °C.${n>1?" Other loaves: into the fridge now if not already.":""}`,`Wgłębienie wraca powoli: przełóż na papier, natnij, do garnka. 20 min pod pokrywką w 250 °C.${n>1?" Pozostałe bochenki: teraz do lodówki, jeśli jeszcze tam nie są.":""}`);
+    case"lidoff":return L("Drop to 230 °C. Bake until deep brown, about 25 min.","Zmniejsz do 230 °C. Piecz do głębokiego brązu, około 25 min.");
+    case"out":return L(`Bottom should sound hollow. Onto a rack.${n>1?" Raise the oven to 250 °C. Lid on, pot back in to reheat 10 min.":""}`,`Spód powinien brzmieć głucho. Na kratkę.${n>1?" Zwiększ piekarnik do 250 °C. Pokrywka na garnek, garnek z powrotem do piekarnika na 10 min.":""}`);
+    case"cut":return L("After at least an hour of cooling.","Po co najmniej godzinie studzenia.");
+    default:if(/^l\d+in$/.test(e.id))return L(`From the fridge, score, into the hot pot. Lid on ${p.cold?25:20} min at 250 °C.`,`Z lodówki, natnij, do gorącego garnka. ${p.cold?25:20} min pod pokrywką w 250 °C.`);
+      if(/off$/.test(e.id))return L("Drop to 230 °C, about 25 min.","Zmniejsz do 230 °C, około 25 min.");
+      if(/out$/.test(e.id))return e.id===`l${n}out`?L("Onto a rack.","Na kratkę."):L("Onto a rack. Raise the oven to 250 °C. Lid on, pot back in to reheat 10 min.","Na kratkę. Zwiększ piekarnik do 250 °C. Pokrywka na garnek, garnek z powrotem do piekarnika na 10 min.");
+      return"";
+  }
+}
+
+/* ---------- setup ---------- */
+const QN=5;
+function showSetup(step){S.setup.step=step;save();$("setup").hidden=false;$("main").hidden=true;renderSetup()}
+const hydRec=()=>Math.min(78,Math.max(60,Math.round(70+(C().protein-12)*2)));
+function proteinText(){const pr=C().protein;
+  return pr<10.5?L("Weak flour: flatter loaf, less water. Keep the dough firm and use the bowl or basket.","Słaba mąka: niższy bochenek, mniej wody. Trzymaj ciasto zwarte i użyj miski lub koszyka.")
+    :pr<11.5?L("Medium-strength flour. Fine for a Dutch oven loaf with a bit less water.","Mąka średniej siły. Nadaje się do chleba z garnka przy nieco mniejszej ilości wody.")
+    :pr<=13.5?L("Bread flour strength. Good structure and rise.","Siła mąki chlebowej. Dobra struktura i wyrastanie."):L("Very strong flour. Takes more water and longer kneading.","Bardzo mocna mąka. Przyjmie więcej wody i wymaga dłuższego wyrabiania.")}
+function renderSetup(){
+  const c=C(),q=S.setup.step,st=started();
+  document.querySelectorAll("[data-q]").forEach(el=>el.hidden=+el.dataset.q!==q);
+  $("dots").innerHTML=[0,1,2,3,4].map(i=>`<i class="${i<=q?"on":""}"></i>`).join("");
+  const locked=(st&&(q===1||q===2))||(q===0&&R().d1);
+  $("qnum").textContent=L(`${q+1} of ${QN}`,`${q+1} z ${QN}`)+(locked?L(" - locked while baking"," - zablokowane w trakcie pieczenia"):"");
+  $("qBack").disabled=q===0&&!S.setup.done;
+  $("qBack").textContent=q===0?L("Close","Zamknij"):L("Back","Wstecz");
+  // Editing an existing plan: "Ready" jumps back to the timeline, "Continue" walks the next setup step
+  $("qNext").textContent=S.setup.done?L("Ready","Gotowe"):q===QN-1?L("Show my plan","Pokaż plan"):L("Next","Dalej");
+  $("qCont").hidden=!S.setup.done||q===QN-1;$("qCont").textContent=L("Continue","Dalej");
+  sv("flour",c.flour);
+  const n=loaves(),g=Math.round(doughW()/n);
+  $("loafHint").textContent=n>1?L(`${n} loaves of ~${g} g dough, baked one after another (one pot fits about ${MAX_LOAF_FLOUR} g flour).`,`${n} ${pf(n,"bochenek","bochenki","bochenków")} po ~${g} g ciasta, pieczone po kolei (garnek mieści około ${MAX_LOAF_FLOUR} g mąki).`):L(`One loaf, ~${g} g dough.`,`Jeden bochenek, ~${g} g ciasta.`);
+  sv("protein",c.protein);$("proteinHint").textContent=proteinText();$("protein").disabled=st;
+  setSeg("ytype",c.ytype);
+  const y=ytt(c.ytype);$("helpPop").innerHTML=`<b>${y.name[0].toUpperCase()+y.name.slice(1)}</b><span>${y.how}</span><ol>${y.steps.map(x=>`<li>${x}</li>`).join("")}</ol>`;
+  $("tempVal").textContent=c.temp+" °C";
+  ["flour","tDown","tUp"].forEach(id=>$(id).disabled=st);
+  document.querySelectorAll("#ytype button,#hydPreset button,#speed button").forEach(b=>b.disabled=st);
+  document.querySelectorAll("#saltPreset button").forEach(b=>b.disabled=st);
+  $("hyd").disabled=st;$("salt").disabled=st;
+  $("hydRec").textContent=L(`For ${c.protein} g protein flour, ${hydRec()}% is a good start.`,`Dla mąki z ${num(c.protein)} g białka dobrym startem jest ${hydRec()}%.`);$("hydUse").hidden=c.hyd===hydRec()||st;
+  setSeg("hydPreset",c.hyd);sv("hyd",c.hyd);$("hydVal").textContent=c.hyd+"%";
+  $("hydHint").textContent=c.hyd<65?L("Stiff dough. Easy to knead, tighter crumb.","Zwarte ciasto. Łatwe w wyrabianiu, drobniejszy miękisz.")
+    :c.hyd<=72?L("Comfortable by hand. Open crumb, holds shape well.","Wygodne do pracy ręcznej. Otwarty miękisz, dobrze trzyma kształt.")
+    :c.hyd<=76?L("Sticky. Knead with wet hands, lean on the folds.","Lepkie. Wyrabiaj mokrymi rękami, postaw na składanie."):L("Very wet for hand kneading. Expect a flatter loaf.","Bardzo mokre jak na wyrabianie ręczne. Bochenek wyjdzie niższy.");
+  setSeg("saltPreset",c.salt);sv("salt",c.salt);$("saltVal").textContent=num(c.salt,1)+"%";
+  const p100=num(saltG()/(doughW()*.88)*100,2),sl=Math.round(saltG()/(doughW()*.88)*100*.3/2*100);
+  $("saltHint").textContent=L(`About ${p100} g salt per 100 g bread; a 30 g slice is ${sl}% of the 2 g daily limit for ages 1-3.${c.salt<1.5?" Low salt: stickier dough, may rise faster.":""}`,`Około ${p100} g soli na 100 g chleba; kromka 30 g to ${sl}% dziennego limitu 2 g dla dzieci w wieku 1-3 lat.${c.salt<1.5?" Mało soli: ciasto bardziej lepkie, może rosnąć szybciej.":""}`);
+  $("speed").innerHTML=[["auto","Auto",""],...SPEEDS.map(g=>[String(g),speedName(g),num(yG(g))+" g"])].map(([v,l,s])=>`<button data-v="${v}"${st?" disabled":""}>${l}${s?`<small>${s}</small>`:""}</button>`).join("");
+  setSeg("speed",String(c.speed));
+  setSeg("tgtMode",c.target?"by":"none");$("tgtBox").hidden=!c.target;
+  if(c.target){const k=Math.round((dayStart(c.target)-dayStart(NOW()))/(24*H));setSeg("tgtDay",String(k));sv("tgtTime",fmt(c.target))}
+  $("tgtDay2").textContent=wd(NOW()+2*24*H,"long");
+  renderBusy();
+  if(q===0)renderFlow();
+}
+const FLOW_NAME=()=>({bake:L("everything in one go","wszystko za jednym razem"),pause:L("fridge before shaping","lodówka przed formowaniem"),loaf:L("fridge after shaping","lodówka po uformowaniu"),later:L("decide when the dough is ready","decyzja, gdy ciasto wyrośnie")});
+const effFlow=()=>R().d1?routeOf({d1:{t:R().d1},d2:{t:R().d2}}):C().flow;
+const hrs=ms=>{const h=ms/H;return h<1?`${Math.round(ms/MIN)} min`:`${(Math.round(h*2)/2).toString().replace(".5","½")} h`};
+function renderFlow(){
+  BUSY=busyIntervals();
+  const plans={};for(const rt of ROUTES)plans[rt.id]=best({d1:rt.d1,d2:rt.d2});
+  const st0=p=>p.T[C().ytype==="dry"?"act":"mix"];
+  const b=plans.bake,pz=plans.pause,lf=plans.loaf;
+  // Once a route is chosen the other routes have no projected times, so show fixed text
+  const lock=!!R().d1,cur=effFlow();
+  const opts=[
+    ["bake",L("Everything in one go","Wszystko za jednym razem"),lock?L("No fridge stop.","Bez przerwy w lodówce."):L(`About ${hrs(b.ready-st0(b))} from start to bread, ready ~${when(b.ready)}.`,`Około ${hrs(b.ready-st0(b))} od startu do chleba, gotowy ~${when(b.ready)}.`),L("No fridge. Lightest, mildest flavor.","Bez lodówki. Najlżejszy, najłagodniejszy smak.")],
+    ["pause",L("Fridge before shaping","Lodówka przed formowaniem"),lock?L("Dough rests 8-24 h in the fridge before shaping.","Ciasto odpoczywa 8-24 h w lodówce przed formowaniem."):L(`${hrs(pz.T.bulk-st0(pz))} prep now, dough rests 8-24 h in the fridge, then ${hrs(pz.ready-pz.T.bulkOut)} shaping and baking.`,`${hrs(pz.T.bulk-st0(pz))} przygotowania teraz, ciasto odpoczywa 8-24 h w lodówce, potem ${hrs(pz.ready-pz.T.bulkOut)} formowania i pieczenia.`),L("Fuller, slightly tangy flavor; cold dough is easier to shape.","Pełniejszy, lekko kwaskowy smak; zimne ciasto łatwiej uformować.")],
+    ["loaf",L("Fridge, then straight into the oven","Lodówka, potem prosto do piekarnika"),lock?L("Shaped loaf rests 2-16 h in the fridge before baking.","Uformowany bochenek odpoczywa 2-16 h w lodówce przed pieczeniem."):L(`${hrs(lf.T.sfr-st0(lf))} prep and shaping now, loaf rests 2-16 h in the fridge, then ${hrs(lf.ready-lf.T.preheat)} baking.`,`${hrs(lf.T.sfr-st0(lf))} przygotowania i formowania teraz, bochenek odpoczywa 2-16 h w lodówce, potem ${hrs(lf.ready-lf.T.preheat)} pieczenia.`),L("Deeper flavor, blistered crisp crust, clean scoring.","Głębszy smak, chrupiąca skórka z pęcherzykami, łatwe nacinanie.")],
+    ["later",L("Decide when the dough is ready","Zdecyduję, gdy ciasto wyrośnie"),L("Start now and pick one of the three above once the dough has risen.","Zacznij teraz i wybierz jedną z trzech opcji, gdy ciasto wyrośnie."),L("Most flexible.","Najbardziej elastyczne.")]];
+  $("flowOpts").innerHTML=opts.map(([v,t,a,b])=>`<button class="choice" data-v="${v}" aria-pressed="${v===cur}"${lock?" disabled":""}><b>${t}</b><span>${a}</span><span>${b}</span></button>`).join("");
+}
+function renderBusy(){
+  const today=dayStart(NOW()),c=C();
+  const dayOpt=b=>{const v=b.day==null?"daily":Math.round((b.day-today)/(24*H));
+    return[["0",L("Today","Dziś")],["1",L("Tomorrow","Jutro")],["daily",L("Every day","Codziennie")]].map(([k,l])=>`<option value="${k}"${String(v)===k?" selected":""}>${l}</option>`).join("")+(typeof v==="number"&&v<0?`<option selected value="${v}">${L("Past day","Miniony dzień")}</option>`:"")};
+  $("busyList").innerHTML=c.busy.length?c.busy.map((b,i)=>`<div class="busyrow" data-i="${i}">
+    <input type="time" data-k="from" value="${b.from!=null?fmtM(b.from):""}" aria-label="${L("Busy from","Zajęty od")}"><span class="hint">${L("to","do")}</span><input type="time" data-k="to" value="${b.to!=null?fmtM(b.to):""}" aria-label="${L("Busy until","Zajęty do")}">
+    <button class="btn ghost x" data-del="${i}">${L("Remove","Usuń")}</button>
+    <select data-k="day" aria-label="${L("Which day","Który dzień")}">${dayOpt(b)}</select></div>`).join(""):`<p class="empty">${L("No busy times. You can add them later.","Brak zajętych godzin. Możesz je dodać później.")}</p>`;
+}
+function sv(id,v){const el=$(id);if(document.activeElement!==el)el.value=v}
+function setSeg(id,v){document.querySelectorAll(`#${id} button`).forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===String(v))))}
+
+$("qNext").onclick=()=>{const q=S.setup.step;if(S.setup.done||q===QN-1){S.setup.done=true;save();showMain()}else{S.setup.step=q+1;save();renderSetup()}};
+$("qCont").onclick=()=>{S.setup.step=Math.min(QN-1,S.setup.step+1);save();renderSetup()};
+$("qBack").onclick=()=>{const q=S.setup.step;if(q===0){if(S.setup.done)showMain()}else{S.setup.step=q-1;save();renderSetup()}};
+const segOn=(id,fn)=>$(id).addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.disabled)return;fn(b.dataset.v);save();renderSetup()});
+$("flowOpts").addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.disabled)return;C().flow=b.dataset.v;S.ui.pv.route=null;save();renderSetup()});
+segOn("ytype",v=>C().ytype=v);
+segOn("hydPreset",v=>C().hyd=+v);
+segOn("saltPreset",v=>C().salt=+v);
+segOn("speed",v=>C().speed=v==="auto"?"auto":+v);
+segOn("tgtMode",v=>{if(v==="none")C().target=null;else if(!C().target){C().target=dayStart(NOW())+24*H+10*H}});
+segOn("tgtDay",v=>{const m=C().target?(C().target-dayStart(C().target))/MIN:600;C().target=dayStart(NOW())+(+v)*24*H+m*MIN});
+$("tgtTime").addEventListener("change",e=>{if(!e.target.value)return;const k=C().target?Math.round((dayStart(C().target)-dayStart(NOW()))/(24*H)):0;C().target=dayStart(NOW())+k*24*H+parseM(e.target.value)*MIN;save();renderSetup()});
+// Out-of-range entries snap to the nearest limit, and the field always shows the value in use
+$("protein").addEventListener("change",e=>{if(e.target.value!=="")C().protein=Math.round(Math.min(16,Math.max(7,+e.target.value))*2)/2;e.target.value=C().protein;save();renderSetup()});
+$("flour").addEventListener("change",e=>{if(e.target.value!=="")C().flour=Math.round(Math.min(3000,Math.max(250,+e.target.value)));e.target.value=C().flour;save();renderSetup()});
+$("hydUse").onclick=()=>{C().hyd=hydRec();save();renderSetup()};
+$("hyd").addEventListener("input",e=>{C().hyd=+e.target.value;save();renderSetup()});
+$("salt").addEventListener("input",e=>{C().salt=+e.target.value;save();renderSetup()});
+$("tDown").onclick=()=>{C().temp=Math.max(16,C().temp-1);save();renderSetup()};
+$("tUp").onclick=()=>{C().temp=Math.min(30,C().temp+1);save();renderSetup()};
+$("helpBtn").onclick=e=>{const p=$("helpPop"),o=p.hidden;p.hidden=!o;e.currentTarget.setAttribute("aria-expanded",String(o))};
+$("addBusy").onclick=()=>{C().busy.push({from:18*60,to:20*60,day:dayStart(NOW())});save();renderBusy()};
+$("addSleep").onclick=()=>{C().busy.push({from:23*60,to:7*60,day:null});save();renderBusy()};
+$("busyList").addEventListener("change",e=>{
+  const row=e.target.closest(".busyrow");if(!row)return;const b=C().busy[+row.dataset.i],k=e.target.dataset.k;
+  if(k==="day")b.day=e.target.value==="daily"?null:dayStart(NOW())+(+e.target.value)*24*H;
+  else if(e.target.value)b[k]=parseM(e.target.value);
+  save();
+});
+$("busyList").addEventListener("click",e=>{const d=e.target.closest("[data-del]");if(!d)return;C().busy.splice(+d.dataset.del,1);save();renderBusy()});
+
+/* ---------- main view ---------- */
+let view=null,shown=null,alts={},editing=null;
+function showMain(){$("setup").hidden=true;$("main").hidden=false;recompute();renderMain()}
+function recompute(){
+  BUSY=busyIntervals();
+  const fx=fixedRoute();
+  view=fx?best({d1:fx.d1,d2:fx.d2}):best();
+  const exp=expireFolds(),adv=advance();
+  if(exp||adv)view=fx?best({d1:fx.d1,d2:fx.d2}):best();
+  const pr=!fx&&S.ui.pv.route&&!R().d1?ROUTES.find(x=>x.id===S.ui.pv.route):null;
+  shown=pr&&pr.id!==routeOf(view.o)?best({d1:pr.d1,d2:pr.d2}):view;
+  alts={};
+  const nx=nextStep(view);
+  if(nx&&nx.id==="bulk"&&!R().d1)alts=fx?{key:"go",rt:fx}:decide();
+}
+// The three ways to go on once the dough has risen
+const ROUTES=[{id:"bake",d1:"shape",d2:"proof",pen:0},{id:"loaf",d1:"shape",d2:"fridge",pen:25},{id:"pause",d1:"fridge",d2:"proof",pen:40}];
+const rtTitle=rt=>({bake:L("Shape and bake now","Uformuj i piecz teraz"),loaf:L("Shape, then the loaf in the fridge","Uformuj, potem bochenek do lodówki"),pause:L("Pause: dough in the fridge","Pauza: ciasto do lodówki")})[rt.id];
+const rtInfo=rt=>({bake:L("No fridge stop. Light, milder flavor.","Bez przerwy w lodówce. Lekki, łagodniejszy smak."),
+  loaf:L("Bake any time 2-16 h later, straight from the fridge. Deeper flavor, blistered crisp crust, clean scoring.","Piecz kiedy chcesz, 2-16 h później, prosto z lodówki. Głębszy smak, chrupiąca skórka z pęcherzykami, łatwe nacinanie."),
+  pause:L("Stop for 8-24 h and shape later. Fuller, slightly tangy flavor; cold dough is easier to shape.","Przerwa na 8-24 h, formowanie później. Pełniejszy, lekko kwaskowy smak; zimne ciasto łatwiej uformować.")})[rt.id];
+const fixedRoute=()=>R().d1?null:ROUTES.find(x=>x.id===C().flow)||null;
+const routeOf=o=>o.d1.t==="fridge"?"pause":o.d2.t==="fridge"?"loaf":"bake";
+// Project a route as if the dough were ready now. Before the bake starts, use the yeast the current plan would pick.
+function simulate(rt){const r=R(),y=r.yeast;if(y==null)r.yeast=(shown||view).o.yeast;r.done.bulk=NOW();r.d1=rt.d1;r.d2=rt.d2;const p=best();delete r.done.bulk;r.d1=null;r.d2=null;r.yeast=y;return p}
+function decide(){
+  const opts=ROUTES.map(rt=>{const p=simulate(rt);return{rt,p,s:score(p)+rt.pen}});
+  return{key:"route",opts,rec:opts.reduce((a,b)=>b.s<a.s?b:a).rt.id};
+}
+function routeDetail(rt,p){
+  const n=NOW();
+  if(rt.id==="bake")return L(`Ready to eat ~${when(p.ready)}.`,`Gotowy do jedzenia ~${when(p.ready)}.`);
+  if(rt.id==="loaf")return L(`Into the fridge ~${fmt(p.T.sfr)}. Suggested bake ${when(p.T.load)}, ready ~${when(p.ready)}.`,`Do lodówki ~${fmt(p.T.sfr)}. Proponowane pieczenie ${when(p.T.load)}, gotowy ~${when(p.ready)}.`);
+  return L(`Take out any time ${when(n+FR_BULK[0]*MIN)} - ${when(n+FR_BULK[1]*MIN)}. Suggested ${when(p.T.bulkOut)}, ready ~${when(p.ready)}.`,`Wyjmij kiedy chcesz, ${when(n+FR_BULK[0]*MIN)} - ${when(n+FR_BULK[1]*MIN)}. Proponowane ${when(p.T.bulkOut)}, gotowy ~${when(p.ready)}.`);
+}
+const mainList=p=>p.ev.filter(e=>!e.side||e.end);
+// Overdue: started or assumed started, not marked done, and past its work time. The plan has moved on from these.
+const isOver=e=>{const r=R(),st=r.st[e.id];return!e.side&&r.done[e.id]==null&&st!=null&&(!!r.auto[e.id]||NOW()>st+(WORK[e.id]||1)*MIN)};
+const overdue=p=>p.ev.filter(isOver);
+const pastWindow=e=>!!e.gate&&R().done[e.id]==null&&R().st[e.id]==null&&NOW()>e.max;
+function nextStep(p){return p.ev.find(e=>!e.side&&R().done[e.id]==null&&!isOver(e))}
+// A missed step counts as started at its due time, so the plan keeps moving.
+// Gates wait: the dough decides when the rise ends and stays in the fridge until taken out.
+function advance(){
+  const r=R(),n=NOW();if(!started()||!view)return false;
+  let ch=false;
+  for(const e of view.ev){
+    if(e.side||r.done[e.id]!=null||r.st[e.id]!=null)continue;
+    if(e.gate||e.t>=n)break;
+    r.st[e.id]=e.t;r.auto[e.id]=true;ch=true;
+  }
+  if(ch)save();return ch;
+}
+// Folds only come up once the dough is kneaded and rising
+// An optional step can still be started for 2 min after its time; after that it counts as skipped
+const GRACE=2*MIN;
+function expireFolds(){
+  const r=R(),n=NOW();if(r.done.knead==null||r.done.bulk!=null||!view)return false;
+  let ch=false;
+  for(const e of view.ev)if(e.fold&&r.done[e.id]==null&&r.st[e.id]==null&&e.t<=n-GRACE){r.done[e.id]=e.t+GRACE;r.skip[e.id]=true;ch=true}
+  if(ch)save();return ch;
+}
+function nextFold(p){const n=NOW();if(R().done.knead==null)return null;return p.ev.find(e=>e.fold&&R().done[e.id]==null&&!R().skip[e.id]&&!hitsBusy(e.t,e.id)&&(R().st[e.id]!=null||e.t>n-GRACE)&&R().done.bulk==null)}
+function upNext(p){const nx=nextStep(p),fd=nextFold(p);return nx&&fd&&fd.t<nx.t?fd:nx}
+function lastDone(p){return p.ev.filter(e=>!e.side&&(R().done[e.id]!=null||isOver(e))).pop()}
+
+function renderMain(){
+  const c=C(),p=view,y=p.o.yeast;
+  const tg=c.target?L(`ready by <b>${when(c.target)}</b>`,`gotowy na <b>${when(c.target)}</b>`):`<b>${L("none","brak")}</b>`;
+  const busy=c.busy.filter(b=>b.from!=null).map(b=>`${fmtM(b.from)}-${fmtM(b.to)}${b.day==null?L(" daily"," codziennie"):dayLbl(b.day)?" "+dayLbl(b.day):L(" today"," dziś")}`).join(", ");
+  $("flourName").textContent=L(`flour, ${c.protein} g protein`,`mąka, ${c.protein} g białka`);
+  $("facts").innerHTML=L(`<b>${c.flour} g</b> flour (${c.protein} g protein)`,`<b>${c.flour} g</b> mąki (${c.protein} g białka)`)+` · <b>${FLOW_NAME()[effFlow()]}</b> · `+L(`<b>${c.hyd}%</b> water · <b>${num(c.salt,1)}%</b> salt`,`<b>${c.hyd}%</b> wody · <b>${num(c.salt,1)}%</b> soli`)
+    +` · <b>${ytt(c.ytype).name}</b>${started()||c.speed!=="auto"?"":L(" (auto speed)"," (tempo auto)")} · <b>${c.temp} °C</b><br>${L("Target","Cel")}: ${tg}${busy?` · ${L("Busy","Zajęty")}: <b>${busy}</b>`:""}`;
+  $("flourAmt").textContent=c.flour+" g";$("waterAmt").textContent=water()+" g";$("saltAmt").textContent=num(saltG())+" g";
+  $("yeastAmt").textContent=num(yG(y))+" g";$("yeastName").textContent=ytt(c.ytype).name;
+  renderStatus();renderStrip();renderSteps();renderAction();tick();
+  $("tune").checked=c.tune;
+  setSeg("rating",S.draft.rating);sv("notes",S.draft.notes);
+  if(!$("resetBox").firstChild)$("resetBox").innerHTML=resetPlain();
+}
+
+function renderStatus(){
+  const c=C(),p=shown,lines=[];let bad=false;
+  const what=loaves()>1?L("Loaf 1 ready to eat","Bochenek 1 gotowy do jedzenia"):L("Ready to eat","Gotowy do jedzenia");
+  if(!started()){
+    const st=p.T[c.ytype==="dry"?"act":"mix"],nowish=st<=NOW()+5*MIN;
+    lines.push([nowish?L("Start now","Zacznij teraz"):L(`Best start ${when(st)}`,`Najlepszy start ${when(st)}`),
+      nowish?L(`With ${num(yG(p.o.yeast))} g ${ytt(c.ytype).name}.`,`Użyj ${num(yG(p.o.yeast))} g: ${ytt(c.ytype).name}.`)
+      :c.target?L("Latest comfortable start for your target. You can still start now and pick the fridge later.","Najpóźniejszy wygodny start dla twojego celu. Możesz też zacząć teraz i później wybrać lodówkę.")
+      :L("Starting now would put a task in a busy time.","Start teraz wypadłby z zadaniem w zajętym czasie.")]);
+  }
+  if(c.target){const d=p.ready-c.target;
+    if(d>60000){bad=true;lines.push([L(`${what} ${when(p.ready)}, ${dur(d)} late`,`${what} ${when(p.ready)}, ${dur(d)} po czasie`),L("Move the target later or remove a busy time.","Przesuń cel na później albo usuń zajęty czas.")])}
+    else lines.push([`${what} ${when(p.ready)}`,d<-30*MIN?L(`${dur(d)} before your target.`,`${dur(d)} przed celem.`):L("On target.","Zgodnie z celem.")]);
+  }else{const late=flexPoints(p).reduce((a,e)=>a+Math.max(0,e.max-e.t),p.ready);
+    lines.push([`${what} ~${when(p.ready)}`,late-p.ready>30*MIN?L(`Latest ${when(late)} if every flexible step runs to its limit. Your choices along the way decide.`,`Najpóźniej ${when(late)}, jeśli każdy elastyczny krok wykorzysta pełen czas. Decydują twoje wybory po drodze.`):L("Your choices along the way can move it.","Twoje wybory po drodze mogą to przesunąć.")])}
+  if(p.clash.length){bad=true;lines.push([L(`${nTasks(p.clash.length)} in a busy time`,`${nTasks(p.clash.length)} w zajętym czasie`),p.clash.map(e=>`${e.name} ${when(e.t)}`).join(", ")+"."])}
+  const ov=overdue(p);
+  if(ov.length){bad=true;lines.push([L(`${nTasks(ov.length)} overdue`,`Po czasie: ${nTasks(ov.length)}`),ov.map(e=>`${e.name} ${when(e.t)}`).join(", ")+". "+L("The plan assumes these started on time. Mark them completed, or edit the time to shift what follows.","Plan zakłada, że zaczęły się na czas. Oznacz je jako ukończone albo zmień czas, aby przesunąć kolejne kroki.")])}
+  const pw=p.ev.find(pastWindow);
+  if(pw){bad=true;lines.push([L(`${pw.name}: window closed ${dur(NOW()-pw.max)} ago`,`${pw.name}: okno zamknięte ${dur(NOW()-pw.max)} temu`),L("Check the dough before going on.","Sprawdź ciasto, zanim przejdziesz dalej.")])}
+  const hands=p.ev.filter(e=>e.hands&&R().done[e.id]==null&&!isOver(e)).length;
+  lines.push([L(`${hands} hands-on moment${hands===1?"":"s"} left`,`Do zrobienia ręcznie: ${nTasks(hands)}`),p.o.d2.t==="fridge"||p.o.d1.t==="fridge"?L("Plan uses the fridge.","Plan korzysta z lodówki."):L("No fridge needed.","Lodówka niepotrzebna.")]);
+  $("status").className="status "+(bad?"bad":"ok");
+  $("status").innerHTML=lines.map(([h,t])=>`<strong>${h}</strong>${t?`<p>${t}</p>`:""}`).join("");
+}
+
+function renderStrip(){
+  const p=shown,ms=mainList(p),n=NOW();
+  const t0=Math.min(ms[0].t,n),t1=Math.max(p.ready,...flexPoints(p).map(e=>e.maxL)),W=640,Lp=10,Rr=W-10,x=t=>Lp+(Math.min(Math.max(t,t0),t1)-t0)/(t1-t0)*(Rr-Lp);
+  let s=`<svg viewBox="0 0 ${W} 92" role="img" aria-label="${L(`Plan overview from ${fmt(t0)} to ${when(t1)}`,`Przegląd planu od ${fmt(t0)} do ${when(t1)}`)}"><defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="3" height="6" fill="var(--busy)" opacity=".55"/></pattern></defs>`;
+  for(const[a,z]of BUSY)if(z>t0&&a<t1)s+=`<rect x="${x(a)}" y="4" width="${Math.max(1,x(z)-x(a))}" height="12" fill="url(#hatch)" rx="2"/>`;
+  for(let i=0;i<ms.length-1;i++){const e=ms[i],f=ms[i+1];if(f.t<=e.t)continue;
+    s+=`<rect x="${x(e.t)}" y="22" width="${Math.max(.5,x(f.t)-x(e.t))}" height="22" fill="var(--${e.k==="oven"?"accent":e.k})"/>`}
+  for(const e of flexPoints(p)){const a=x(e.min),z=x(e.maxL);s+=`<rect x="${a}" y="19" width="${Math.max(2,z-a)}" height="28" fill="none" stroke="var(--cold-ink)" stroke-width="1.5" stroke-dasharray="4 3" rx="3"/>`}
+  for(const e of p.ev)if(e.hands){const d=R().done[e.id]!=null;s+=`<rect x="${x(e.t)-1}" y="48" width="2" height="8" fill="var(--${d?"muted":"ink"})"/>`}
+  for(const e of p.ev)if(e.decision&&!R()[e.decision]){const cx=x(e.t);s+=`<path d="M${cx} 25 L${cx+7} 33 L${cx} 41 L${cx-7} 33Z" fill="var(--surface)" stroke="var(--cold-ink)" stroke-width="2"/>`}
+  const span=t1-t0,step=span<=8*H?2*H:span<=16*H?3*H:6*H;
+  for(let t=Math.ceil(t0/step)*step;t<=t1;t+=step){const d=new Date(t);
+    const lbl=d.getHours()===0?wd(t):fmt(t);
+    s+=`<line x1="${x(t)}" x2="${x(t)}" y1="58" y2="64" stroke="var(--line)"/><text x="${x(t)}" y="78" font-size="11" text-anchor="middle" fill="var(--muted)" font-family="IBM Plex Mono, monospace">${lbl}</text>`}
+  if(n>=t0&&n<=t1)s+=`<line x1="${x(n)}" x2="${x(n)}" y1="0" y2="58" stroke="var(--warn)" stroke-width="2"/><text x="${Math.min(x(n)+4,W-36)}" y="90" font-size="10" fill="var(--warn)" font-family="IBM Plex Sans, sans-serif">${L("now","teraz")}</text>`;
+  s+="</svg>";
+  $("strip").innerHTML=s;
+  $("span").textContent=`${when(t0)} → ${when(t1)}`;
+}
+
+// Flexible points: the rise (dough decides) and fridge take-out (any time in a range).
+// Everything after the first open one is shown relative to it, with a latest time.
+const isFlex=e=>e.gate&&R().done[e.id]==null&&R().st[e.id]==null;
+function flexPoints(p){
+  let shift=0;const out=[];
+  for(const e of p.ev){if(!isFlex(e))continue;out.push({...e,maxL:e.max+shift});shift+=Math.max(0,e.max-e.t)}
+  return out;
+}
+const rel=ms=>{const m=Math.round(ms/MIN);return m<=0?L("same time","w tym samym czasie"):"+"+(m>=60?`${Math.floor(m/60)}:${pad(m%60)}`:`${m} min`)};
+const curRouteTitle=()=>rtTitle(ROUTES.find(x=>x.id===(fixedRoute()?.id??S.ui.pv.route??routeOf(view.o))));
+function renderSteps(){
+  const p=shown,ol=$("steps"),dn=R().done,nx=nextStep(p),un=upNext(p),ld=lastDone(p);
+  ol.innerHTML="";
+  let anchor=null,shift=0;
+  const add=html=>{const li=document.createElement("li");li.innerHTML=html.inner;li.className=html.cls;ol.appendChild(li)};
+  for(const e of p.ev){
+    if(e.fold&&(hitsBusy(e.t,e.id)||(dn.bulk!=null&&dn[e.id]==null)))continue;
+    const done=dn[e.id]!=null,skip=R().skip[e.id],flex=isFlex(e),over=isOver(e);
+    const isN=e===un,isC=e===ld&&!over&&nx&&R().st[un.id]==null;
+    if(flex&&e.flex){
+      const a=e.min,z=e.max;
+      add({cls:"gap",inner:e.id==="preheat"?L(`Loaf in the fridge · bake between ${when(a+45*MIN)} and ${when(z+45*MIN)}`,`Bochenek w lodówce · piecz między ${when(a+45*MIN)} a ${when(z+45*MIN)}`):L(`Dough in the fridge · take out between ${when(a)} and ${when(z)}`,`Ciasto w lodówce · wyjmij między ${when(a)} a ${when(z)}`)});
+    }
+    let tcol,chips="";
+    const run=!done&&R().st[e.id]!=null;
+    if(done)tcol=`${fmt(dn[e.id])}<small>${skip?L("skipped","pominięty"):R().as[e.id]||R().auto[e.id]?L("assumed","przyjęte"):L("actual","faktycznie")}</small>`;
+    else if(over)tcol=`${fmt(R().st[e.id])}<small>${L("overdue","po czasie")}</small>`;
+    else if(run)tcol=`${fmt(R().st[e.id])}<small>${L("started","rozpoczęte")}</small>`;
+    else if(flex)tcol=`~${fmt(e.due)}<small>${e.id==="bulk"?L("dough decides","decyduje ciasto"):L("flexible","elastycznie")}</small>`;
+    else if(anchor)tcol=`${rel(e.t-anchor.t)}<small>${L("by","do")} ${when(e.t+shift)}</small>`;
+    else tcol=`${fmt(e.t)}${dayLbl(e.t)?`<small>${dayLbl(e.t)}</small>`:""}`;
+    if(over)chips+=`<span class="chip over">${L("Overdue","Po czasie")}</span>`;
+    else if(run)chips+=`<span class="chip cur">${L("In progress","W toku")}</span>`;
+    else if(isC)chips+=`<span class="chip cur">${L("Current","Teraz")}</span>`;
+    else if(done)chips+=`<span class="chip done">${skip?L("Skipped","Pominięty"):L("Done","Zrobione")}</span>`;
+    if(isN&&!run)chips+=`<span class="chip nxt">${e.due<=NOW()?L("Do now","Zrób teraz"):L("Up next","Następny")}</span>`;
+    if(pastWindow(e))chips+=`<span class="chip over">${L("Past window","Po oknie")}</span>`;
+    if(e.fold&&!done)chips+=`<span class="chip opt">${L("Optional","Opcjonalny")}</span>`;
+    if(e.decision&&!R()[e.decision]&&!done)chips+=`<span class="chip dec">${L("Decision","Decyzja")}</span>`;
+    if(!done&&!run&&e.hands&&hitsBusy(e.t,e.id))chips+=`<span class="chip late">${L("Busy time","Zajęty czas")}</span>`;
+    let acts="";
+    if(editing===e.id)acts=`<div class="tedit"><label class="lbl" for="tEdit">${done?L("Done at","Zrobione o"):L("Started at","Rozpoczęte o")}</label><input type="time" id="tEdit" value="${fmt(done?dn[e.id]:R().st[e.id])}"><button class="btn primary" data-tsave="${e.id}">${L("Save","Zapisz")}</button><button class="btn ghost" data-tcancel="1">${L("Cancel","Anuluj")}</button></div>`;
+    else if(done&&!e.end)acts=`<button class="btn ghost" data-tedit="${e.id}">${L("Edit time","Zmień czas")}</button><button class="btn ghost" data-undo="${e.id}">${L("Undo","Cofnij")}</button>`;
+    else if(over)acts=`<button class="btn primary" data-complete="${e.id}">${L("Completed","Ukończone")}</button><button class="btn ghost" data-tedit="${e.id}">${L("Edit time","Zmień czas")}</button>`;
+    else if(run)acts=`<button class="btn ghost" data-tedit="${e.id}">${L("Edit start time","Zmień czas startu")}</button>`;
+    else if(!done&&!run&&!e.end)acts=`<button class="btn ${isN?"primary":"outline"}" data-start="${e.id}"${isN?"":` title="${L("Marks earlier steps as done and starts this one","Oznacza wcześniejsze kroki jako zrobione i zaczyna ten")}"`}>${e.id==="bulk"?L("Dough is ready","Ciasto gotowe"):isN?"Start":L("I'm here","Jestem tutaj")}</button>${e.id==="bulk"?`<span class="hint">${L("continues with","dalej")}: ${lc(curRouteTitle())}</span>`:""}`;
+    let text=isC&&e.phase?L(`Now: ${lc(e.phase)}.`,`Teraz: ${lc(e.phase)}.`):desc(e,p);
+    if(over)text+=` <span class="hint">${L(`Assumed started at ${fmt(R().st[e.id])}. Later steps count from then.`,`Przyjęty start o ${fmt(R().st[e.id])}. Kolejne kroki liczą się od tej chwili.`)}</span>`;
+    if(anchor&&!done&&!flex)text+=` <span class="hint">${L(`${rel(e.t-anchor.t)} after ${lc(anchor.name)}.`,`${rel(e.t-anchor.t)} po kroku „${lc(anchor.name)}”.`)}</span>`;
+    const fut=!done&&!run&&!isN&&!isC;
+    add({cls:"step"+(done?" done":"")+(isN&&!run?" next":"")+(isC?" current":"")+(over?" overdue":run?" running":"")+(fut?" future":"")+(e.fold?" fold":""),
+      inner:`<div class="t">${tcol}</div><div class="rail" aria-hidden="true"><i></i></div><div class="body"><div class="name">${e.name}${chips}</div><p class="desc">${text}</p><div class="acts">${acts}</div></div>`});
+    if(e.decision&&!R()[e.decision]&&!done&&!fixedRoute()){
+      const sug=routeOf(view.o),cur=S.ui.pv.route??sug;
+      add({cls:"fork",inner:`<div class="lbl">${L("Then, one of","Potem jedno z")}</div><div class="forkopts" data-pv="route">${ROUTES.map(rt=>`<button class="choice${rt.id===sug?" rec":""}" data-v="${rt.id}" aria-pressed="${rt.id===cur}">${rt.id===sug?`<span class="tag">${L("Suggested","Proponowane")}</span>`:""}<b>${rtTitle(rt)}</b><span>${rtInfo(rt)}</span></button>`).join("")}</div><p class="hint">${L("Tap to preview that path. You choose for real when the dough is ready.","Dotknij, aby podejrzeć tę ścieżkę. Ostateczny wybór, gdy ciasto wyrośnie.")}</p>`});
+    }
+    if(flex){anchor=e;shift+=Math.max(0,e.max-e.t)}
+  }
+}
+
+function choiceBtn(p,label,detail,rec,data){
+  return`<button class="choice${rec?" rec":""}" data-choose="${data}">${rec?`<span class="tag">${L("Suggested","Proponowane")}</span>`:""}<b>${label}</b><span>${detail}</span>${p.clash.length?`<span style="color:var(--warn)">${L(`${nTasks(p.clash.length)} in a busy time`,`${nTasks(p.clash.length)} w zajętym czasie`)}</span>`:""}</button>`;
+}
+function renderAction(){
+  const p=view,nx=nextStep(p),el=$("action"),ov=overdue(p);
+  const ovBlock=ov.length?`<div class="action overdue"><div class="what">${L("Overdue","Po czasie")}</div>${ov.map(e=>`<div class="overitem"><b>${e.name} · ${L("due","termin")} ${when(e.t)}</b><span class="hint">${L("Assumed started on time. If it happened later, edit the time and the steps after it shift.","Przyjęto start na czas. Jeśli było później, zmień czas, a kolejne kroki się przesuną.")}</span><div class="row"><button class="btn primary" data-act="done" data-id="${e.id}">${L("Completed","Ukończone")}</button><button class="btn ghost" data-tedit="${e.id}">${L("Edit time","Zmień czas")}</button></div></div>`).join("")}</div>`:"";
+  announce(ov.length?L(`${nTasks(ov.length)} overdue`,`Po czasie: ${nTasks(ov.length)}`)+(nx?`. ${upNext(p).name}`:""):nx?upNext(p).name:L("All done","Gotowe"));
+  if(!nx){el.innerHTML=ovBlock||`<div class="action"><div class="what">${L("All done","Gotowe")}</div><p>${L("Enjoy the bread. Rate it in the bake log below.","Smacznego! Oceń wypiek w dzienniku poniżej.")}</p></div>`;return}
+  const n=NOW(),e=upNext(p);
+  const late=pastWindow(e)?`<p class="warnline">${e.id==="bulk"?L(`Rise window closed ${dur(n-e.max)} ago. Check the dough for over-proofing before going on.`,`Okno wyrastania zamknęło się ${dur(n-e.max)} temu. Sprawdź, czy ciasto nie jest przerośnięte.`):L(`Fridge window closed ${dur(n-e.max)} ago. Check the dough before going on.`,`Okno lodówki zamknęło się ${dur(n-e.max)} temu. Sprawdź ciasto, zanim przejdziesz dalej.`)}</p>`:"";
+  const early=(e.id==="bulk"&&n<e.min?`<p class="hint">${L(`Earlier than expected (from ${fmt(e.min)}). Only continue when it has doubled.`,`Wcześniej niż zakładano (od ${fmt(e.min)}). Kontynuuj dopiero, gdy ciasto podwoi objętość.`)}</p>`:"")+late;
+  const win=(e.flex?`<p class="hint">${L(`Window: ${when(e.min)} - ${when(e.max)}. Suggested time fits your target and busy times.`,`Okno: ${when(e.min)} - ${when(e.max)}. Proponowany czas pasuje do celu i zajętych godzin.`)}</p>`:"")+late;
+  let body=`<div class="what">${e.name} · ${when(e.due)}</div><p>${desc(e,p)}</p>`;
+  if(e.fold&&R().st[e.id]==null)body+=`<div class="row"><button class="btn primary" data-act="start" data-id="${e.id}">Start</button><button class="btn ghost" data-act="done" data-id="${e.id}">${L("Already done","Już zrobione")}</button><button class="btn" data-act="skip" data-id="${e.id}">${L("Skip","Pomiń")}</button></div>`;
+  else if(alts.key==="go"&&e.id==="bulk")body+=`<div class="row"><button class="btn primary" data-flow="1">${L("Dough is ready","Ciasto gotowe")}</button><span class="hint">${L("continues with","dalej")}: ${lc(rtTitle(alts.rt))}</span></div>`+early;
+  else if(alts.key==="route"&&e.id==="bulk")body+=`<div class="choices">${alts.opts.map(({rt,p:q})=>choiceBtn(q,rtTitle(rt),`${rtInfo(rt)} ${routeDetail(rt,q)}`,rt.id===alts.rec,"route:"+rt.id)).join("")}</div>`+early;
+  else if(WORK[e.id]&&R().st[e.id]!=null)body=`<div class="what">${e.name} · ${L("in progress since","w toku od")} ${fmt(R().st[e.id])}</div><p>${desc(e,p)}</p><div class="row"><button class="btn primary" data-act="done" data-id="${e.id}">${L("Done","Zrobione")}</button><button class="btn ghost" data-act="unstart" data-id="${e.id}">${L("Not started yet","Jeszcze nie zacząłem")}</button></div>`;
+  else if(WORK[e.id])body+=win+`<div class="row"><button class="btn primary" data-act="start" data-id="${e.id}">Start</button><button class="btn ghost" data-act="done" data-id="${e.id}">${L("Already done","Już zrobione")}</button></div><p class="hint">${L(`Takes about ${WORK[e.id]} min. Start keeps the clock with you while you work.`,`Zajmuje około ${WORK[e.id]} min. Start uruchamia zegar na czas pracy.`)}</p>`;
+  else body+=win+`<div class="row"><button class="btn primary" data-act="done" data-id="${e.id}">${e.flex?L("Start now","Zacznij teraz"):L("Done","Zrobione")}</button></div>`;
+  el.innerHTML=ovBlock+`<div class="action">${body}</div>`;
+}
+// Screen readers hear when the task changes, not every countdown second
+let lastMsg=null;
+function announce(m){if(m!==lastMsg){lastMsg=m;$("liveMsg").textContent=m}}
+
+let overKey="";
+const overKeyOf=p=>overdue(p).map(e=>e.id).join();
+function tick(){
+  if(!view||$("main").hidden||document.hidden)return;
+  if(!editing&&(expireFolds()||advance()||overKeyOf(view)!==overKey)){recompute();overKey=overKeyOf(view);renderMain();return}
+  const p=view,n=NOW(),nx=nextStep(p),ld=lastDone(p);
+  $("clock").textContent=new Date(n).toLocaleTimeString(LOC(),{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+  const ovNow=overdue(p);
+  $("phase").textContent=!nx&&!ovNow.length?L("All done","Gotowe"):ld?ld.phase:L("Not started","Nie rozpoczęto");
+  if(!nx){
+    if(ovNow.length){$("countLbl").textContent=L("Overdue for","Po czasie od");$("count").textContent=clock(n-ovNow[0].t);$("count").className="count over"}
+    else{$("countLbl").textContent="";$("count").textContent="00:00";$("count").className="count"}
+    $("bar").style.width="100%";return;
+  }
+  const un=upNext(p),cnt=$("count"),stT=R().st[un.id];
+  if(stT!=null&&R().done[un.id]==null){
+    const el=n-stT,w=(WORK[un.id]||5)*MIN;
+    $("phase").textContent=L(`Working: ${lc(un.name)}`,`W trakcie: ${lc(un.name)}`);
+    $("countLbl").textContent=WORK[un.id]?L(`Elapsed (about ${WORK[un.id]} min)`,`Upłynęło (około ${WORK[un.id]} min)`):L("Elapsed","Upłynęło");cnt.textContent=clock(el);cnt.className="count";
+    $("bar").style.width=Math.min(100,el/w*100)+"%";return;
+  }
+  const e=un,left=(e.gate?e.due:e.t)-n,from=ld?(R().done[ld.id]??R().st[ld.id]):n;
+  if(e.fold&&left<=0){
+    const g=GRACE+left;
+    if(g<=0){recompute();renderMain();return}
+    $("countLbl").textContent=L(`${e.name} overdue - start within`,`${e.name}: spóźnione - zacznij w ciągu`);cnt.textContent=clock(g);cnt.className="count over";
+    $("bar").style.width=Math.min(100,(-left)/GRACE*100)+"%";
+    return;
+  }
+  if(left>0||!e.gate){$("countLbl").textContent=e.flex?L(`Suggested: ${lc(e.name)} in`,`Proponowane: ${lc(e.name)} za`):L(`Next: ${lc(e.name)} in`,`Następnie: ${lc(e.name)} za`);cnt.textContent=clock(left);cnt.className="count"}
+  else if(pastWindow(e)){$("countLbl").textContent=e.id==="bulk"?L("Rise window closed, over by","Okno wyrastania zamknięte, po czasie"):L("Fridge window closed, over by","Okno lodówki zamknięte, po czasie");cnt.textContent=clock(n-e.max);cnt.className="count over"}
+  else if(e.gate){$("countLbl").textContent=e.id==="bulk"?L("Check the dough - window open for","Sprawdź ciasto - okno otwarte jeszcze"):L("Window open, closes in","Okno otwarte, zamyka się za");cnt.textContent=clock(e.max-n);cnt.className="count open"}
+  const total=(e.gate?e.due:e.t)-from;$("bar").style.width=(total>0?Math.min(100,Math.max(0,(n-from)/total*100)):100)+"%";
+}
+
+// Put a clock time on the day nearest to the old value, never in the future
+function nearest(old,hhmm){
+  let t=dayStart(old)+parseM(hhmm)*MIN;
+  if(t-old>12*H)t-=24*H;else if(old-t>12*H)t+=24*H;
+  return Math.min(t,NOW());
+}
+function saveTime(id){
+  const v=$("tEdit")?.value,r=R(),list=shown.ev,i=list.findIndex(e=>e.id===id);editing=null;
+  if(v){
+    if(r.done[id]!=null){r.done[id]=nearest(r.done[id],v);delete r.as[id];delete r.auto[id];if(r.st[id]!=null&&r.st[id]>r.done[id])delete r.st[id]}
+    else if(r.st[id]!=null){r.st[id]=nearest(r.st[id],v);delete r.auto[id]}
+    // Later steps that were only assumed started follow the corrected time
+    list.slice(i+1).forEach(e=>{if(r.auto[e.id]&&r.done[e.id]==null){delete r.st[e.id];delete r.auto[e.id]}});
+    save();
+  }
+  recompute();renderMain();
+}
+// Confirm how to continue once the dough has risen; the planned flow is preselected
+let fmSel=null,fmOpts=[],fmRec=null;
+function openFlow(){
+  const d=decide();fmOpts=d.opts;fmRec=d.rec;
+  fmSel=fixedRoute()?.id??S.ui.pv.route??d.rec;
+  renderFlowModal();$("flowModal").hidden=false;$("fmGo").focus();
+}
+function renderFlowModal(){
+  $("fmOpts").innerHTML=fmOpts.map(({rt,p:q})=>`<button class="choice" data-v="${rt.id}" aria-pressed="${rt.id===fmSel}">${rt.id===fmRec?`<span class="tag">${L("Suggested","Proponowane")}</span>`:""}<b>${rtTitle(rt)}</b><span>${rtInfo(rt)}</span><span>${routeDetail(rt,q)}</span></button>`).join("");
+}
+function closeFlow(){$("flowModal").hidden=true}
+$("fmOpts").addEventListener("click",e=>{const b=e.target.closest("[data-v]");if(!b)return;fmSel=b.dataset.v;renderFlowModal()});
+$("fmCancel").onclick=closeFlow;
+$("flowModal").addEventListener("click",e=>{if(e.target.id==="flowModal")closeFlow()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("flowModal").hidden)closeFlow()});
+$("fmGo").onclick=()=>{
+  closeFlow();const rt=ROUTES.find(x=>x.id===fmSel);if(!rt)return;
+  if(nextStep(view)?.id==="bulk")markDone("bulk","route:"+rt.id);
+  else{R().d1=rt.d1;R().d2=rt.d2;S.ui.pv.route=null;startAt("bulk")}
+};
+// Jump to any step: earlier steps count as done now (marked "assumed"), this one starts now
+function startAt(id){
+  const r=R(),n=NOW(),list=shown.ev,i=list.findIndex(e=>e.id===id);
+  if(i<0)return;
+  if(!started())r.yeast=shown.o.yeast;
+  const bi=list.findIndex(e=>e.id==="bulk");
+  if(!r.d1&&bi>=0&&bi<=i){r.d1=shown.o.d1.t;r.d2=shown.o.d2.t;S.ui.pv.route=null}
+  list.slice(0,i).forEach(e=>{
+    if(r.done[e.id]!=null)return;
+    // A fold you started counts as done, not skipped
+    if(e.fold){r.done[e.id]=n;if(r.st[e.id]==null)r.skip[e.id]=true;return}
+    if(e.side)return;
+    if(r.st[e.id]!=null)r.done[e.id]=finishAt(e,n);
+    else{r.done[e.id]=n;r.as[e.id]=true}
+  });
+  if(WORK[id])r.st[id]=n;else r.done[id]=n;
+  save();recompute();renderMain();
+}
+// A started step finishes on schedule, so the steps after it stay put. Edit time moves them.
+function finishAt(e,n){return Math.min(n,R().st[e.id]+(WORK[e.id]||0)*MIN)}
+function markDone(id,choice){
+  const r=R(),n=NOW();
+  if(!started())r.yeast=view.o.yeast;
+  const list=view.ev,i=list.findIndex(e=>e.id===id),self=list[i],wasOver=isOver(self);
+  for(const k of["f1","f2","f3"])if(k!==id&&r.st[k]!=null&&r.done[k]==null)r.done[k]=n;
+  if(!self.fold)list.slice(0,i).forEach(e=>{if(!e.side&&r.done[e.id]==null){if(r.st[e.id]!=null)r.done[e.id]=finishAt(e,n);else{r.done[e.id]=n;r.skip[e.id]=true}}});
+  r.done[id]=wasOver?finishAt(self,n):n;
+  if(choice){const rt=ROUTES.find(x=>"route:"+x.id===choice);r.d1=rt.d1;r.d2=rt.d2;S.ui.pv.route=null}
+  if(id==="bulk"&&!r.d1){r.d1=view.o.d1.t;r.d2=view.o.d2.t}
+  save();recompute();renderMain();
+}
+const startWork=id=>{const r=R();if(!started())r.yeast=view.o.yeast;r.st[id]=NOW();save();recompute();renderMain()};
+$("action").addEventListener("click",e=>{
+  if(e.target.closest("[data-flow]")){openFlow();return}
+  const te=e.target.closest("[data-tedit]");if(te){editing=te.dataset.tedit;renderSteps();const i=$("tEdit");if(i){i.focus();i.scrollIntoView({block:"center"})}return}
+  const c=e.target.closest("[data-choose]"),a=e.target.closest("[data-act]");
+  if(c)markDone("bulk",c.dataset.choose);
+  else if(a&&a.dataset.act==="start")startWork(a.dataset.id);
+  else if(a&&a.dataset.act==="unstart"){delete R().st[a.dataset.id];save();recompute();renderMain()}
+  else if(a){if(a.dataset.act==="skip"){R().skip[a.dataset.id]=true;R().done[a.dataset.id]=NOW();save();recompute();renderMain()}else markDone(a.dataset.id)}
+});
+$("steps").addEventListener("click",e=>{
+  const sb=e.target.closest("[data-start]");if(sb){if(sb.dataset.start==="bulk")openFlow();else startAt(sb.dataset.start);return}
+  const cp=e.target.closest("[data-complete]");if(cp){markDone(cp.dataset.complete);return}
+  const te=e.target.closest("[data-tedit]");if(te){editing=te.dataset.tedit;renderSteps();const i=$("tEdit");if(i)i.focus();return}
+  if(e.target.closest("[data-tcancel]")){editing=null;renderSteps();return}
+  const ts=e.target.closest("[data-tsave]");if(ts){saveTime(ts.dataset.tsave);return}
+  const pvb=e.target.closest("[data-pv] button");
+  if(pvb){S.ui.pv.route=pvb.dataset.v===routeOf(view.o)?null:pvb.dataset.v;save();recompute();renderMain();return}
+  const u=e.target.closest("[data-undo]");if(!u)return;
+  // Undo resets this step and everything after it, including steps in progress and the route choice
+  const r=R(),list=shown.ev,i=list.findIndex(x=>x.id===u.dataset.undo);
+  for(const x of list.slice(i)){const k=x.id;delete r.done[k];delete r.skip[k];delete r.st[k];delete r.as[k];delete r.auto[k];if(k==="bulk"){r.d1=null;r.d2=null}}
+  if(!started())r.yeast=null;
+  save();recompute();renderMain();
+});
+document.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>showSetup(+b.dataset.edit));
+$("tune").onchange=e=>{C().tune=e.target.checked;save();renderLog();recompute();renderMain()};
+$("rating").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;S.draft.rating=+b.dataset.v;save();setSeg("rating",S.draft.rating)});
+$("notes").addEventListener("input",e=>{S.draft.notes=e.target.value;save()});
+const resetPlain=()=>`<button class="btn" id="reset">${L("New bake","Nowy wypiek")}</button>`;
+const rb=$("resetBox");
+rb.addEventListener("click",e=>{
+  if(e.target.id==="reset")rb.innerHTML=`<span class="row">${L("Clear progress and start over?","Wyczyścić postęp i zacząć od nowa?")} <button class="btn primary" id="resetYes">${L("Clear","Wyczyść")}</button><button class="btn" id="resetNo">${L("Keep","Zostaw")}</button></span>`;
+  else if(e.target.id==="resetYes"){S.run=fresh().run;S.ui=fresh().ui;save();rb.innerHTML=resetPlain();showSetup(0)}
+  else if(e.target.id==="resetNo")rb.innerHTML=resetPlain();
+});
+
+/* ---------- bake log: kept in this browser ---------- */
+const readLog=()=>{try{return JSON.parse(localStorage.getItem(LOG_KEY))||[]}catch(e){return[]}};
+// Throws when browser storage is full or blocked, so callers can say so
+function writeLog(x){
+  localStorage.setItem(LOG_KEY,JSON.stringify(x));LOG=x;renderLog();
+  if(!$("main").hidden&&!editing){recompute();renderMain()}
+}
+function renderLog(){
+  const ol=$("logList"),xs=timedBakes();
+  if(!xs.length)$("tuneInfo").textContent=L("Needs one saved bake with kneading and the rise both marked.","Potrzebny jeden zapisany wypiek z zaznaczonym wyrabianiem i wyrastaniem.");
+  else{const f=xs.reduce((a,e)=>a+e.bulkAct/e.bulkBase,0)/xs.length,pct=Math.round((f-1)*100),n=xs.length,ap=C().tune;
+    $("tuneInfo").textContent=L(`From ${n} bake${n>1?"s":""}: your rise runs ${pct===0?"right on the estimate":Math.abs(pct)+"% "+(pct>0?"slower":"faster")+" than estimated"}.${ap?" Applied.":""}`,
+      `Z ${n} ${pf(n,"wypieku","wypieków","wypieków")}: twoje wyrastanie trwa ${pct===0?"dokładnie tyle, ile szacowano":Math.abs(pct)+"% "+(pct>0?"dłużej":"krócej")+" niż szacowano"}.${ap?" Zastosowano.":""}`)}
+  if(!LOG.length){ol.innerHTML=`<li><p class="empty">${L("No bakes saved yet.","Brak zapisanych wypieków.")}</p></li>`;return}
+  ol.innerHTML=LOG.map(e=>{
+    const date=new Date(e.at).toLocaleDateString(LOC(),{weekday:"short",day:"numeric",month:"short"});
+    const dots=`<span class="rate" aria-label="${L(`${e.rating} of 5`,`${e.rating} z 5`)}">${[1,2,3,4,5].map(k=>`<i class="${k<=e.rating?"on":""}"></i>`).join("")}</span>`;
+    const route=[e.d1==="fridge"?L("bulk in fridge","ciasto w lodówce"):"",e.d2==="fridge"?L("shaped loaf in fridge","bochenek w lodówce"):""].filter(Boolean).join(", ")||L("same day","tego samego dnia");
+    const pct=`${e.bulkAct>=e.bulkBase?"+":""}${Math.round((e.bulkAct/e.bulkBase-1)*100)}%`;
+    const bulk=e.bulkAct>0?L(`Rise ${dur(e.bulkAct*MIN)} (estimate ${dur(e.bulkBase*MIN)}, ${pct})`,`Wyrastanie ${dur(e.bulkAct*MIN)} (szacunek ${dur(e.bulkBase*MIN)}, ${pct})`):L("Rise time not recorded","Brak czasu wyrastania");
+    const prot=L(` (${e.protein} g protein)`,` (${e.protein} g białka)`);
+    return`<li class="entry"><div class="e-top"><b>${date}</b>${dots}</div>
+      <div class="e-meta">${e.flour} g${prot} · ${L(`${e.hyd}% water · ${e.salt}% salt`,`${e.hyd}% wody · ${num(e.salt)}% soli`)} · ${num(e.yeastG)} g ${ytt(e.ytype).name} · ${e.temp} °C · ${route}</div>
+      <div class="e-meta">${bulk}</div>${e.notes?`<p class="e-notes">${esc(e.notes)}</p>`:""}
+      <div class="acts"><button class="btn ghost" data-del="${e.id}">${L("Delete","Usuń")}</button></div></li>`}).join("");
+}
+$("logList").addEventListener("click",e=>{
+  const del=e.target.closest("[data-del]"),yes=e.target.closest("[data-yes]"),no=e.target.closest("[data-no]");
+  if(del)del.parentElement.innerHTML=`<span class="hint">${L("Delete this bake?","Usunąć ten wypiek?")}</span><button class="btn primary" data-yes="${del.dataset.del}">${L("Delete","Usuń")}</button><button class="btn" data-no="1">${L("Keep","Zostaw")}</button>`;
+  else if(no)renderLog();
+  else if(yes){
+    const id=yes.dataset.yes;
+    try{writeLog(readLog().filter(x=>x.id!==id));if(R().logId===id){R().logId=null;save()}}
+    catch(err){$("logMsg").textContent=L("Could not delete. Try again.","Nie udało się usunąć. Spróbuj ponownie.");renderLog()}
+  }
+});
+const logMsgDefault=()=>L("Saves settings, rise time, your choices and rating.","Zapisuje ustawienia, czas wyrastania, wybory i ocenę.");
+$("saveLog").onclick=()=>{
+  const msg=$("logMsg"),r=R(),c=C();
+  if(!Object.keys(r.done).length){msg.textContent=L("Mark at least one step done before saving.","Przed zapisem oznacz co najmniej jeden krok.");return}
+  if(r.logId){msg.textContent=L("This bake is already in your log. Delete the entry to save it again.","Ten wypiek jest już w dzienniku. Usuń wpis, aby zapisać go ponownie.");return}
+  // Assumed times are not measurements, so they stay out of rise tuning
+  const real=id=>r.done[id]!=null&&!r.skip[id]&&!r.as[id]&&!r.auto[id];
+  const id="b"+Date.now(),rec={id,at:Math.min(...Object.values(r.done)),protein:c.protein,ytype:c.ytype,yeastG:yG(r.yeast),flour:c.flour,hyd:c.hyd,salt:c.salt,temp:c.temp,d1:r.d1,d2:r.d2,
+    bulkAct:real("knead")&&real("bulk")?Math.round((r.done.bulk-r.done.knead)/MIN):0,bulkBase:Math.round(BULK[r.yeast]*tf()),rating:S.draft.rating||0,notes:S.draft.notes.slice(0,2000)};
+  try{
+    writeLog([rec,...readLog()]);
+    r.logId=id;S.draft={rating:0,notes:""};save();
+    msg.textContent=L("Saved to your log.","Zapisano w dzienniku.");setSeg("rating",0);$("notes").value="";
+  }catch(e){msg.textContent=L("Could not save. Browser storage is full or blocked.","Nie udało się zapisać. Pamięć przeglądarki jest pełna lub zablokowana.")}
+};
+
+/* ---------- language switch ---------- */
+function rerenderAll(){
+  applyStatic();
+  $("logMsg").textContent=logMsgDefault();
+  $("resetBox").innerHTML=resetPlain();
+  renderLog();
+  if(!$("setup").hidden)renderSetup();
+  if(!$("main").hidden){recompute();renderMain()}
+  if(!$("flowModal").hidden)renderFlowModal();
+}
+$("lang").addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.dataset.v===LANG)return;LANG=b.dataset.v;try{localStorage.setItem(LANG_KEY,LANG)}catch(err){}rerenderAll()});
+
+if(navigator.wakeLock){const lock=()=>navigator.wakeLock.request("screen").catch(()=>{});lock();document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")lock()})}
+applyStatic();$("logMsg").textContent=logMsgDefault();
+LOG=readLog();
+if(S.setup.done)showMain();else showSetup(S.setup.step);
+renderLog();
+setInterval(tick,1000);
+setInterval(()=>{if(!$("main").hidden&&!editing&&!document.hidden){recompute();renderMain()}},60000);
+</script>
+
+</body>
+</html>
