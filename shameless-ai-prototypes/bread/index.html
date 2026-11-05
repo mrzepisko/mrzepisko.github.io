@@ -208,6 +208,13 @@ li.gap{display:block;position:relative;z-index:2;padding:9px 12px 9px 100px;marg
     <div class="row spread"><button class="btn" id="fmCancel" data-pl="Anuluj">Cancel</button><button class="btn primary" id="fmGo" data-pl="Dalej">Continue</button></div>
   </div>
 </div>
+<div class="modal" id="restoreModal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="rmTitle" aria-describedby="rmText">
+    <h3 id="rmTitle" data-pl="Przywrócić poprzednią sesję?">Restore your previous session?</h3>
+    <p class="hint" id="rmText"></p>
+    <div class="row spread"><button class="btn" id="rmFresh" data-pl="Zacznij od nowa">Start fresh</button><button class="btn primary" id="rmKeep" data-pl="Przywróć">Restore</button></div>
+  </div>
+</div>
 <div class="wrap">
   <header class="top">
     <div>
@@ -280,6 +287,7 @@ li.gap{display:block;position:relative;z-index:2;padding:9px 12px 9px 100px;marg
     </div>
 
     <div class="qnav"><button class="btn" id="qBack">Back</button><div class="row"><button class="btn" id="qCont" hidden>Continue</button><button class="btn primary" id="qNext">Next</button></div></div>
+    <div class="row" id="setupReset"></div>
   </section>
 
   <div id="main" hidden>
@@ -544,7 +552,7 @@ function best(force={}){
 }
 
 
-const KEY="bread-planner-v3",LOG_KEY="bread-bake-log-v1";
+const KEY="bread-planner-v3",LOG_KEY="bread-bake-log-v1",VISIT_KEY="bread-last-visit",VISIT_STALE=24*H;
 const defCfg={flow:"later",protein:12,flour:500,ytype:"instant",temp:22,hyd:70,salt:2,speed:"auto",target:null,busy:[],tune:false};
 let S=load();
 function fresh(){return{cfg:{...defCfg},setup:{done:false,step:0},run:{done:{},st:{},as:{},auto:{},d1:null,d2:null,yeast:null,skip:{},logId:null},ui:{pv:{route:null}},draft:{rating:0,notes:""}}}
@@ -639,6 +647,7 @@ function renderSetup(){
   $("tgtDay2").textContent=wd(NOW()+2*24*H,"long");
   renderBusy();
   if(q===0)renderFlow();
+  $("setupReset").innerHTML=setupResetPlain();
 }
 const FLOW_NAME=()=>({bake:L("everything in one go","wszystko za jednym razem"),pause:L("fridge before shaping","lodówka przed formowaniem"),loaf:L("fridge after shaping","lodówka po uformowaniu"),later:L("decide when the dough is ready","decyzja, gdy ciasto wyrośnie")});
 const effFlow=()=>R().d1?routeOf({d1:{t:R().d1},d2:{t:R().d2}}):C().flow;
@@ -669,6 +678,22 @@ function renderBusy(){
 function sv(id,v){const el=$(id);if(document.activeElement!==el)el.value=v}
 function setSeg(id,v){document.querySelectorAll(`#${id} button`).forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===String(v))))}
 
+// Back to defaults: settings, progress and notes go, the bake log and the log-tuning switch stay
+function startOver(){
+  const tune=C().tune;S=fresh();C().tune=tune;save();
+  editing=null;view=null;shown=null;alts={};closeFlow();
+  $("resetBox").innerHTML=resetPlain();$("logMsg").textContent=logMsgDefault();
+  showSetup(0);
+}
+const setupResetPlain=()=>`<button class="btn ghost" id="setupResetBtn">${L("Reset settings","Resetuj ustawienia")}</button>`;
+$("setupReset").addEventListener("click",e=>{
+  const box=$("setupReset");
+  if(e.target.id==="setupResetBtn"){
+    box.innerHTML=`<span class="hint">${started()?L("Reset all settings and clear bake progress? The bake log stays.","Zresetować ustawienia i wyczyścić postęp wypieku? Dziennik wypieków zostaje."):L("Reset all settings to defaults? The bake log stays.","Przywrócić domyślne ustawienia? Dziennik wypieków zostaje.")}</span><button class="btn primary" id="setupResetYes">${L("Reset","Resetuj")}</button><button class="btn" id="setupResetNo">${L("Keep","Zostaw")}</button>`;
+    $("setupResetNo").focus();
+  }else if(e.target.id==="setupResetYes"){startOver();$("qNext").focus()}
+  else if(e.target.id==="setupResetNo"){box.innerHTML=setupResetPlain();$("setupResetBtn").focus()}
+});
 $("qNext").onclick=()=>{const q=S.setup.step;if(S.setup.done||q===QN-1){S.setup.done=true;save();showMain()}else{S.setup.step=q+1;save();renderSetup()}};
 $("qCont").onclick=()=>{S.setup.step=Math.min(QN-1,S.setup.step+1);save();renderSetup()};
 $("qBack").onclick=()=>{const q=S.setup.step;if(q===0){if(S.setup.done)showMain()}else{S.setup.step=q-1;save();renderSetup()}};
@@ -781,6 +806,18 @@ function renderMain(){
   if(!$("resetBox").firstChild)$("resetBox").innerHTML=resetPlain();
 }
 
+// When the dough could go into the fridge, while the rise is still open. Both routes share the same rise, on this plan's start and yeast.
+function fridgeLine(p){
+  const b=p.ev.find(e=>e.id==="bulk");
+  if(R().d1||R().done.bulk!=null||!b)return null;
+  const q=plan({...p.o,d1:{t:"shape"},d2:{t:"fridge",dur:FR_IDEAL.shaped}}),lead=q.T.sfr-q.T.bulk;
+  const at=(t,a,z)=>`~${when(t)} (${[a,z].map(x=>dayStart(x)===dayStart(t)?fmt(x):when(x)).join("-")})`;
+  const folds=p.ev.filter(e=>e.fold&&R().done[e.id]==null&&!hitsBusy(e.t,e.id)).map(e=>fmt(e.t)).join(", ");
+  return[L("Into the fridge","Do lodówki"),
+    L(`Before shaping: ${at(b.t,b.min,b.max)}`,`Przed formowaniem: ${at(b.t,b.min,b.max)}`)+"<br>"
+    +L(`After shaping: ${at(b.t+lead,b.min+lead,b.max+lead)}`,`Po uformowaniu: ${at(b.t+lead,b.min+lead,b.max+lead)}`)
+    +(folds?"<br>"+L(`Folds (optional): ${folds}. They don't change these times.`,`Składanie (opcjonalne): ${folds}. Nie zmienia tych czasów.`):"")];
+}
 function renderStatus(){
   const c=C(),p=shown,lines=[];let bad=false;
   const what=loaves()>1?L("Loaf 1 ready to eat","Bochenek 1 gotowy do jedzenia"):L("Ready to eat","Gotowy do jedzenia");
@@ -796,6 +833,7 @@ function renderStatus(){
     else lines.push([`${what} ${when(p.ready)}`,d<-30*MIN?L(`${dur(d)} before your target.`,`${dur(d)} przed celem.`):L("On target.","Zgodnie z celem.")]);
   }else{const late=flexPoints(p).reduce((a,e)=>a+Math.max(0,e.max-e.t),p.ready);
     lines.push([`${what} ~${when(p.ready)}`,late-p.ready>30*MIN?L(`Latest ${when(late)} if every flexible step runs to its limit. Your choices along the way decide.`,`Najpóźniej ${when(late)}, jeśli każdy elastyczny krok wykorzysta pełen czas. Decydują twoje wybory po drodze.`):L("Your choices along the way can move it.","Twoje wybory po drodze mogą to przesunąć.")])}
+  const fr=fridgeLine(p);if(fr)lines.push(fr);
   if(p.clash.length){bad=true;lines.push([L(`${nTasks(p.clash.length)} in a busy time`,`${nTasks(p.clash.length)} w zajętym czasie`),p.clash.map(e=>`${e.name} ${when(e.t)}`).join(", ")+"."])}
   const ov=overdue(p);
   if(ov.length){bad=true;lines.push([L(`${nTasks(ov.length)} overdue`,`Po czasie: ${nTasks(ov.length)}`),ov.map(e=>`${e.name} ${when(e.t)}`).join(", ")+". "+L("The plan assumes these started on time. Mark them completed, or edit the time to shift what follows.","Plan zakłada, że zaczęły się na czas. Oznacz je jako ukończone albo zmień czas, aby przesunąć kolejne kroki.")])}
@@ -1104,6 +1142,27 @@ $("saveLog").onclick=()=>{
   }catch(e){msg.textContent=L("Could not save. Browser storage is full or blocked.","Nie udało się zapisać. Pamięć przeglądarki jest pełna lub zablokowana.")}
 };
 
+/* ---------- returning after more than a day: ask before reusing the old session ---------- */
+const hasSession=()=>S.setup.done||S.setup.step>0||started()||JSON.stringify(C())!==JSON.stringify({...defCfg,tune:C().tune});
+function stampVisit(){try{localStorage.setItem(VISIT_KEY,String(NOW()))}catch(e){}}
+function openRestore(last){
+  const date=new Date(last).toLocaleDateString(LOC(),{weekday:"short",day:"numeric",month:"short"});
+  const state=started()?L("bake in progress","wypiek w toku"):S.setup.done?L("plan ready","plan gotowy"):L("setup not finished","konfiguracja niedokończona");
+  $("rmText").textContent=L(`Last visit: ${date}, ${fmt(last)}. ${C().flour} g flour, ${state}. Starting fresh clears these settings; the bake log stays.`,`Ostatnia wizyta: ${date}, ${fmt(last)}. ${C().flour} g mąki, ${state}. Nowy start wyczyści te ustawienia; dziennik wypieków zostaje.`);
+  closeFlow();$("restoreModal").hidden=false;$("rmKeep").focus();
+}
+// The visit time stays old until the question is answered, so a reload asks again
+function checkVisit(){
+  if(!$("restoreModal").hidden)return;
+  let last=0;try{last=+localStorage.getItem(VISIT_KEY)}catch(e){}
+  if(last&&NOW()-last>VISIT_STALE&&hasSession())openRestore(last);else stampVisit();
+}
+function closeRestore(){$("restoreModal").hidden=true;stampVisit()}
+$("rmKeep").onclick=closeRestore;
+$("rmFresh").onclick=()=>{closeRestore();startOver()};
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("restoreModal").hidden)closeRestore()});
+document.addEventListener("visibilitychange",checkVisit);
+
 /* ---------- language switch ---------- */
 function rerenderAll(){
   applyStatic();
@@ -1121,8 +1180,9 @@ applyStatic();$("logMsg").textContent=logMsgDefault();
 LOG=readLog();
 if(S.setup.done)showMain();else showSetup(S.setup.step);
 renderLog();
+checkVisit();
 setInterval(tick,1000);
-setInterval(()=>{if(!$("main").hidden&&!editing&&!document.hidden){recompute();renderMain()}},60000);
+setInterval(()=>{if(document.hidden)return;checkVisit();if(!$("main").hidden&&!editing){recompute();renderMain()}},60000);
 </script>
 
 </body>
